@@ -1,0 +1,10 @@
+/home/amos/dev/BRDc/solana/target/debug/deps/borsh_schema_derive_internal-2c1dac1939ce0cf5.d: /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/lib.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/helpers.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/enum_schema.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/struct_schema.rs
+
+/home/amos/dev/BRDc/solana/target/debug/deps/libborsh_schema_derive_internal-2c1dac1939ce0cf5.rlib: /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/lib.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/helpers.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/enum_schema.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/struct_schema.rs
+
+/home/amos/dev/BRDc/solana/target/debug/deps/libborsh_schema_derive_internal-2c1dac1939ce0cf5.rmeta: /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/lib.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/helpers.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/enum_schema.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/struct_schema.rs
+
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/lib.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/helpers.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/enum_schema.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/borsh-schema-derive-internal-0.9.3/src/struct_schema.rs:

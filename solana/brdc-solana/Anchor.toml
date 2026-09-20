@@ -1,0 +1,18 @@
+[programs]
+brdc-token = "src/brdc_token"
+brdc-reserve = "src/brdc_reserve"
+brdc-governance = "src/brdc_governance"
+
+[registry]
+url = "https://api.devnet.solana.com"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[provider.profile.default]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+#Scripts de deploy e teste ficam aqui

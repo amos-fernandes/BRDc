@@ -1,0 +1,18 @@
+[package]
+name = "brdc-solana-reserve"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "brdc_reserve"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+no-ix-name = []
+
+[dependencies]
+anchor-lang = "0.30"
+solana-program = "2.2"
+
+[dev-dependencies]
+anchor-test = "0.30"

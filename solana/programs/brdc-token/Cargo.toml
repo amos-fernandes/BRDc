@@ -1,0 +1,19 @@
+[package]
+name = "brdc-solana-token"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "brdc_solana_token"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["no-entrypoint"]
+no-entrypoint = []
+
+[dependencies]
+anchor-lang = "0.29"
+solana-program = "2.1"
+spl-token = { version = "4", features = ["no-entrypoint"] }
+spl-associated-token-account = { version = "2", features = ["no-entrypoint"] }
+borsh = "0.9"

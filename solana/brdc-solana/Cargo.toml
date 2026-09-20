@@ -1,0 +1,15 @@
+[workspace]
+members = [
+    "programs/brdc-token",
+    "programs/brdc-reserve",
+    "programs/brdc-governance",
+]
+
+[anchor]
+workspace = "."
+
+
+[net]
+tester = { solana = "https://api.devnet.solana.com" }
+
+[features]

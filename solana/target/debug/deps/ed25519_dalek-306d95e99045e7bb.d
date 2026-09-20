@@ -1,0 +1,11 @@
+/home/amos/dev/BRDc/solana/target/debug/deps/ed25519_dalek-306d95e99045e7bb.d: /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/lib.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/constants.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/keypair.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/errors.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/public.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/secret.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/signature.rs
+
+/home/amos/dev/BRDc/solana/target/debug/deps/libed25519_dalek-306d95e99045e7bb.rmeta: /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/lib.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/constants.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/keypair.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/errors.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/public.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/secret.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/signature.rs
+
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/lib.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/constants.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/keypair.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/errors.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/public.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/secret.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ed25519-dalek-1.0.1/src/signature.rs:

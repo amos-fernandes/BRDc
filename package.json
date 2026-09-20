@@ -1,0 +1,24 @@
+{
+  "name": "brdc",
+  "version": "0.1.0",
+  "description": "BRDc — token de índice lastreado em cesta de ativos reais brasileiros (ouro com resgate físico + minérios/commodities via NAV), deploy na Base",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:base-sepolia": "hardhat run scripts/deploy/deploy.ts --network baseSepolia",
+    "deploy:base": "hardhat run scripts/deploy/deploy.ts --network base"
+  },
+  "devDependencies": {
+    "@chainlink/contracts": "^1.1.1",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "5.0.2",
+    "@openzeppelin/contracts-upgradeable": "5.0.2",
+    "@openzeppelin/hardhat-upgrades": "^3.2.0",
+    "dotenv": "^16.4.0",
+    "hardhat": "^2.22.0",
+    "solc": "^0.8.24",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.5.0"
+  }
+}
