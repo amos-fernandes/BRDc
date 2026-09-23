@@ -2,7 +2,7 @@
 
 ## Arquitetura Híbrida — Solana + EVM
 
-**BRDc** é um token de índice que acompanha o NAV de uma cesta de ativos reais brasileiros (ouro + minérios + commodities). Esta implementação é para a **Solana devnet** e usa uma arquitetura híbrida: a Oracle de cesta (NAV) continua no ecossistema EVM (Base Sepolia), enquanto os contratos de token, reserva e governança são implementados em Rust/Anchor na Solana.
+**BRDc** é um token de índice que acompanha o NAV de uma cesta de ativos reais brasileiros (ouro + minérios + commodities). Esta implementação é para a **Solana testnet** e usa uma arquitetura híbrida: a Oracle de cesta (NAV) continua no ecossistema EVM (Base Sepolia), enquanto os contratos de token, reserva e governança são implementados em Rust/Anchor na Solana.
 
 ---
 
@@ -97,7 +97,7 @@
 - Feed de preços escolhido na Solana para commodities
 - Atualmente: o NAV vem do EVM via poster
 - Futuro: integrar Pyth para atualizar preços das commodities diretamente na Solana
-- Disponível em devnet e mainnet
+- Disponível em testnet e mainnet
 
 ## Endossos Legais e Advertências
 
@@ -110,10 +110,10 @@
 ## Pré-requisitos
 
 - Rust e Cargo instalados
-- Solana CLI 2.2+ instalado e configurado para devnet
+- Solana CLI 2.2+ instalado e configurado para testnet
 - Anchor CLI 0.30+ instalado via avm
 - Node.js 18+ e npm para scripts de deploy
-- SOL na devnet para deploy e teste
+- SOL na testnet para deploy e teste
 - Acesso à Base Sepolia RPC
 - Keypair Solana configurado em ~/.config/solana/id.json
 
@@ -127,11 +127,11 @@ cargo build --release
 anchor build
 ```
 
-### 2. Deploy na devnet
+### 2. Deploy na testnet
 
 ```bash
-# Configurar Anchor para devnet
-anchor config set --provider.cluster devnet
+# Configurar Anchor para testnet
+anchor config set --provider.cluster testnet
 anchor config set --provider.wallet ~/.config/solana/id.json
 
 # Deployar os programas
@@ -150,7 +150,7 @@ node deploy.js
 ```bash
 # Definir variáveis de ambiente
 export BRDc_SOLANA_KEYPAIR=~/.config/solana/id.json
-export SOLANA_RPC_URL=https://api.devnet.solana.com
+export SOLANA_RPC_URL=https://api.testnet.solana.com
 export BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
 export BRDC_ORACLE_BRIDGE_PROGRAM_ID=<program-id-do-bridge>
 export BRDC_EVM_ORACLE_ADDRESS=<endereço-da-oracle-na-base>
@@ -204,7 +204,7 @@ solana/
 │   └── brdc-governance/    # Programa: Governanca (propostas, votacao)
 │       └── src/lib.rs
 ├── scripts/
-│   ├── deploy.js           # Script de deploy na devnet
+│   ├── deploy.js           # Script de deploy na testnet
 │   └── nav-poster.ts       # Daemon off-chain para atualizar NAV
 └── target/                 # Build artifacts (gerado por cargo/anchor)
 ```
@@ -222,7 +222,7 @@ cargo test -p brdc-token
 cargo test -p brdc-reserve
 cargo test -p brdc-governance
 
-# Testes de integração via Anchor (quando houver SOL na devnet)
+# Testes de integração via Anchor (quando houver SOL na testnet)
 anchor test
 ```
 

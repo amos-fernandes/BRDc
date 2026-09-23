@@ -10,6 +10,6 @@ workspace = "."
 
 
 [net]
-tester = { solana = "https://api.devnet.solana.com" }
+tester = { solana = "https://api.testnet.solana.com" }
 
 [features]

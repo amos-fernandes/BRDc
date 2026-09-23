@@ -1,0 +1,17 @@
+[workspace]
+members = [
+    "programs/brdc-oracle-bridge",
+    "programs/brdc-token",
+    "programs/brdc-reserve",
+    "programs/brdc-governance",
+]
+
+[provider]
+cluster = "testnet"
+wallet = "~/.config/solana/id.json"
+
+[registry]
+url = "https://api.ankr.com"
+
+[features]
+no-entrypoint = false

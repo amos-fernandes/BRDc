@@ -2,13 +2,13 @@
 
 /**
  * BRDc NAV Poster — Off-chain daemon que lê o NAV do oracle EVM (Base Sepolia)
- * e atualiza o NAV bridge na Solana devnet.
+ * e atualiza o NAV bridge na Solana testnet.
  *
  * Fluxo:
  * 1. O script lê o endereço da Oracle EVM via argumento ou variável de ambiente
  * 2. Chama computeNAV() na Oracle (via RPC da Base Sepolia)
  * 3. Pega o resultado (NAV em 8 decimais, USD)
- * 4. Chama updateNav() no BRDcOracleBridge program na Solana devnet
+ * 4. Chama updateNav() no BRDcOracleBridge program na Solana testnet
  *
  * Uso:
  *   BRDc_SOLANA_KEYPAIR=~/.config/solana/id.json \
@@ -30,7 +30,7 @@ const * as ethers from 'ethers';
 // Configurações via ambiente
 const CONFIG = {
   solanaKeypair: process.env.BRDc_SOLANA_KEYPAIR || path.join(os.homedir(), '.config', 'solana', 'id.json'),
-  solanaRpcUrl: process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+  solanaRpcUrl: process.env.SOLANA_RPC_URL || 'https://api.testnet.solana.com',
   baseSepoliaRpcUrl: process.env.BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org',
   brdcOracleBridgeProgramId: process.env.BRDC_ORACLE_BRIDGE_PROGRAM_ID || '',
   brdcEvmOracleAddress: process.env.BRDC_EVM_ORACLE_ADDRESS || '',

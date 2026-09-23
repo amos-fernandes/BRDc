@@ -3,14 +3,14 @@
 /**
  * BRDc Solana Deploy Script
  *
- * Deploya os 4 programas Anchor na Solana devnet:
+ * Deploya os 4 programas Anchor na Solana testnet:
  * 1. brdc-oracle-bridge (NAV state)
  * 2. brdc-token (token BRDc)
  * 3. brdc-reserve (reserva de liquidação em USDC)
  * 4. brdc-governance (governança)
  *
  * Usa keypair em ~/.config/solana/id.json
- * Requer: anchor, solana-cli configurados para devnet
+ * Requer: anchor, solana-cli configurados para testnet
  *
  * Uso: node deploy.js
  */
@@ -22,7 +22,7 @@ const os = require('os');
 
 const SOLANA_CONFIG = {
   keypair: path.join(process.env.HOME || os.homedir(), '.config', 'solana', 'id.json'),
-  rpcUrl: process.env.SOLANA_RPC_URL || 'https://api.devnet.solana.com',
+  rpcUrl: process.env.SOLANA_RPC_URL || 'https://api.testnet.solana.com',
   commitment: 'confirmed',
 };
 
@@ -43,8 +43,8 @@ function run(cmd, opts = {}) {
 async function main() {
   console.log('=== BRDc Solana Deploy ===\n');
 
-  // Configurar Solana para devnet
-  console.log('1. Configurando Solana para devnet...');
+  // Configurar Solana para testnet
+  console.log('1. Configurando Solana para testnet...');
   try {
     run(`solana config set --url ${SOLANA_CONFIG.rpcUrl}`);
     console.log('Configuração OK!\n');
@@ -99,7 +99,7 @@ async function main() {
   }
 
   // 5. Deploy programs
-  console.log('6. Deployando programas na devnet...');
+  console.log('6. Deployando programas na testnet...');
   try {
     run('anchor deploy');
     console.log('Deploy concluído!\n');

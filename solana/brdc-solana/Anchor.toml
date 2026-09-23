@@ -4,15 +4,15 @@ brdc-reserve = "src/brdc_reserve"
 brdc-governance = "src/brdc_governance"
 
 [registry]
-url = "https://api.devnet.solana.com"
+url = "https://api.testnet.solana.com"
 
 [provider]
-cluster = "devnet"
+cluster = "testnet"
 wallet = "~/.config/solana/id.json"
 
 [provider.profile.default]
-cluster = "devnet"
+cluster = "testnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-#Scripts de deploy e teste ficam aqui
+# Scripts de deploy e teste ficam aqui
