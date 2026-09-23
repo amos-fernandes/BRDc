@@ -1,9 +1,0 @@
-/home/amos/dev/BRDc/solana/target/debug/deps/spl_transfer_hook_interface-51e139bc6503f2d0.d: /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/lib.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/error.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/instruction.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/offchain.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/onchain.rs
-
-/home/amos/dev/BRDc/solana/target/debug/deps/libspl_transfer_hook_interface-51e139bc6503f2d0.rmeta: /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/lib.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/error.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/instruction.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/offchain.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/onchain.rs
-
-/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/lib.rs:
-/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/error.rs:
-/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/instruction.rs:
-/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/offchain.rs:
-/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spl-transfer-hook-interface-0.4.1/src/onchain.rs:
