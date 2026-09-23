@@ -12,7 +12,7 @@ default = ["no-entrypoint"]
 no-entrypoint = []
 
 [dependencies]
-anchor-lang = "0.29"
-solana-program = "2.1"
-spl-token = { version = "4", features = ["no-entrypoint"] }
-borsh = "0.9"
+anchor-lang = { workspace = true }
+solana-program = { workspace = true }
+spl-token = { workspace = true }
+borsh = { workspace = true }
