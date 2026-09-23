@@ -1,0 +1,71 @@
+name: Build Solana Programs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'solana/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Solana CLI
+        uses: jmone/InstallSolana@v1
+        with:
+          version: '2.3.0'
+          channel: 'stable'
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          target: sbf-solana-solana
+
+      - name: Build Programs
+        working-directory: ./solana
+        run: |
+          cargo build-sbf --manifest-path programs/brdc-oracle-bridge/Cargo.toml
+          cargo build-sbf --manifest-path programs/brdc-token/Cargo.toml
+          cargo build-sbf --manifest-path programs/brdc-reserve/Cargo.toml
+          cargo build-sbf --manifest-path programs/brdc-governance/Cargo.toml
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: solana-programs
+          path: solana/target/deploy/*.so
+
+  deploy:
+    needs: build
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: solana-programs
+          path: solana/target/deploy
+
+      - name: Install Solana CLI
+        uses: jmone/InstallSolana@v1
+        with:
+          version: '2.3.0'
+          channel: 'stable'
+
+      - name: Configure Wallet
+        run: |
+          echo "${{ secrets.SOLANA_KEYPAIR }}" > keypair.json
+          solana config set --keypair keypair.json --url https://api.testnet.solana.com
+
+      - name: Deploy Programs
+        working-directory: ./solana
+        run: |
+          solana program deploy target/deploy/libbrdc_oracle_bridge.so
+          solana program deploy target/deploy/libbrdc_solana_token.so
+          solana program deploy target/deploy/libbrdc_solana_reserve.so
+          solana program deploy target/deploy/libbrdc_solana_governance.so

@@ -1,109 +1,113 @@
-use anchor_lang::prelude::*;
+use solana_program::{
+    account_info::{next_account_info, AccountInfo},
+    entrypoint,
+    entrypoint::ProgramResult,
+    msg,
+    program_error::ProgramError,
+    pubkey::Pubkey,
+    sysvar::{clock::Clock, Sysvar},
+};
 
-declare_id!("4YCcQywGVtG73itS4h1oo9gXqyzityCb7hzyrWeGL9tD");
+entrypoint!(process_instruction);
 
-#[program]
-pub mod brdc_oracle_bridge {
-    use super::*;
+#[derive(Debug)]
+pub enum OracleInstruction {
+    Initialize,
+    UpdateNav { new_nav: u64 },
+    GetNav,
+}
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        ctx.accounts
-            .bridge_state
-            .initialize(ctx.accounts.admin.key());
-        emit!(BridgeInitializedEvent {
-            admin: ctx.accounts.admin.key(),
-        });
-        Ok(())
-    }
-
-    pub fn update_nav(ctx: Context<UpdateNav>, new_nav: u64) -> Result<()> {
-        if ctx.accounts.admin.key() != ctx.accounts.bridge_state.admin {
-            return err!(1);
-        }
-        ctx.accounts
-            .bridge_state
-            .set_nav(new_nav, Clock::get().unwrap().unix_timestamp);
-        emit!(NavUpdatedEvent {
-            new_nav,
-            updated_at: Clock::get().unwrap().unix_timestamp,
-        });
-        Ok(())
-    }
-
-    pub fn get_nav(ctx: Context<GetNav>) -> Result<()> {
-        if ctx.accounts.bridge_state.last_nav == 0 {
-            return err!(2);
-        }
-        emit!(NavRetrievedEvent {
-            nav: ctx.accounts.bridge_state.last_nav,
-            timestamp: ctx.accounts.bridge_state.last_update_timestamp,
-            fetched_by: ctx.accounts.fetching_info.key(),
-        });
-        Ok(())
+impl OracleInstruction {
+    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
+        let (&tag, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
+        Ok(match tag {
+            0 => Self::Initialize,
+            1 => {
+                let new_nav = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                Self::UpdateNav { new_nav }
+            }
+            2 => Self::GetNav,
+            _ => return Err(ProgramError::InvalidInstructionData),
+        })
     }
 }
 
-#[derive(Accounts)]
-pub struct Initialize<'info> {
-    #[account(seeds = [b"bridge"], bump)]
-    pub bridge_state: Account<'info, BridgeState>,
-    pub admin: AccountInfo<'info>,
-    pub payer: AccountInfo<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct UpdateNav<'info> {
-    #[account(seeds = [b"bridge"], bump)]
-    pub bridge_state: Account<'info, BridgeState>,
-    pub admin: AccountInfo<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-#[derive(Accounts)]
-pub struct GetNav<'info> {
-    #[account(seeds = [b"bridge"], bump)]
-    pub bridge_state: Account<'info, BridgeState>,
-    pub fetching_info: AccountInfo<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-#[account]
+#[repr(C)]
+#[derive(Debug, Default)]
 pub struct BridgeState {
     pub admin: Pubkey,
     pub last_nav: u64,
     pub last_update_timestamp: i64,
-    pub authority: Pubkey,
 }
 
-impl BridgeState {
-    pub fn initialize(&mut self, admin: Pubkey) {
-        self.admin = admin;
-        self.last_nav = 0;
-        self.last_update_timestamp = 0;
-        self.authority = admin;
+fn process_instruction(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    instruction_data: &[u8],
+) -> ProgramResult {
+    let instruction = OracleInstruction::unpack(instruction_data)?;
+    
+    match instruction {
+        OracleInstruction::Initialize => {
+            msg!("Initialize bridge");
+            let accounts_iter = &mut accounts.iter();
+            let bridge_account = next_account_info(accounts_iter)?;
+            let admin_account = next_account_info(accounts_iter)?;
+            
+            if !bridge_account.is_writable {
+                return Err(ProgramError::InvalidAccountData);
+            }
+            
+            let mut bridge_state = BridgeState::default();
+            bridge_state.admin = *admin_account.key;
+            bridge_state.last_nav = 0;
+            bridge_state.last_update_timestamp = 0;
+            
+            let mut data = bridge_account.try_borrow_mut_data()?;
+            let bytes = bytemuck::bytes_of(&bridge_state);
+            data[..bytes.len()].copy_from_slice(bytes);
+            
+            msg!("Bridge initialized with admin: {}", admin_account.key);
+            Ok(())
+        }
+        OracleInstruction::UpdateNav { new_nav } => {
+            msg!("Update NAV: {}", new_nav);
+            let accounts_iter = &mut accounts.iter();
+            let bridge_account = next_account_info(accounts_iter)?;
+            let admin_account = next_account_info(accounts_iter)?;
+            
+            if !admin_account.is_signer {
+                return Err(ProgramError::MissingRequiredSignature);
+            }
+            
+            let mut bridge_data = bridge_account.try_borrow_mut_data()?;
+            let bridge_state = bytemuck::from_bytes_mut::<BridgeState>(&mut bridge_data);
+            
+            if bridge_state.admin != *admin_account.key {
+                return Err(ProgramError::InvalidAccountData);
+            }
+            
+            let clock = Clock::get()?;
+            bridge_state.last_nav = new_nav;
+            bridge_state.last_update_timestamp = clock.unix_timestamp;
+            
+            msg!("NAV updated to {} at {}", new_nav, clock.unix_timestamp);
+            Ok(())
+        }
+        OracleInstruction::GetNav => {
+            msg!("Get NAV");
+            let accounts_iter = &mut accounts.iter();
+            let bridge_account = next_account_info(accounts_iter)?;
+            
+            let bridge_data = bridge_account.try_borrow_data()?;
+            let bridge_state = bytemuck::from_bytes::<BridgeState>(&bridge_data);
+            
+            if bridge_state.last_nav == 0 {
+                return Err(ProgramError::InvalidAccountData);
+            }
+            
+            msg!("Current NAV: {}, updated at {}", bridge_state.last_nav, bridge_state.last_update_timestamp);
+            Ok(())
+        }
     }
-
-    pub fn set_nav(&mut self, new_nav: u64, timestamp: i64) {
-        self.last_nav = new_nav;
-        self.last_update_timestamp = timestamp;
-    }
-}
-
-#[event]
-pub struct BridgeInitializedEvent {
-    pub admin: Pubkey,
-}
-
-#[event]
-pub struct NavUpdatedEvent {
-    pub new_nav: u64,
-    pub updated_at: i64,
-}
-
-#[event]
-pub struct NavRetrievedEvent {
-    pub nav: u64,
-    pub timestamp: i64,
-    pub fetched_by: Pubkey,
 }
