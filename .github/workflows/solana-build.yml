@@ -9,6 +9,7 @@ on:
 
 env:
   SOLANA_VERSION: v4.3.0
+  SOLANA_RPC_URL: https://api.testnet.solana.com
 
 jobs:
   build:
@@ -237,9 +238,55 @@ jobs:
 
           solana config set \
             --keypair "$KEYPAIR_PATH" \
-            --url https://api.testnet.solana.com
+            --url "$SOLANA_RPC_URL"
 
           echo "SOLANA_KEYPAIR_PATH=$KEYPAIR_PATH" >> "$GITHUB_ENV"
+
+      - name: Check deployment wallet balance
+        shell: bash
+        env:
+          SOLANA_KEYPAIR_PATH: ${{ env.SOLANA_KEYPAIR_PATH }}
+        run: |
+          set -euo pipefail
+
+          export PATH="$SOLANA_BIN:$PATH"
+
+          wallet="$(solana address \
+            --keypair "$SOLANA_KEYPAIR_PATH")"
+
+          balance_lamports="$(solana balance \
+            --lamports \
+            --keypair "$SOLANA_KEYPAIR_PATH" \
+            --url "$SOLANA_RPC_URL")"
+
+          # One SOL is a conservative minimum for deploying/upgrading
+          # the four programs in this workflow. The actual amount depends
+          # on each program's ELF size and whether it is a new deployment.
+          required_lamports=1000000000
+          required_sol="1.0"
+
+          echo "Deployment wallet: $wallet"
+          echo "Deployment wallet balance: ${balance_lamports} lamports"
+          echo "Required minimum balance: ${required_lamports} lamports (${required_sol} SOL)"
+
+          if ! [[ "$balance_lamports" =~ ^[0-9]+$ ]]; then
+            echo "::error::Could not parse the Solana wallet balance: $balance_lamports"
+            exit 1
+          fi
+
+          if (( balance_lamports < required_lamports )); then
+            actual_sol="$(awk -v lamports="$balance_lamports" \
+              'BEGIN { printf "%.9f", lamports / 1000000000 }')"
+
+            echo "::error::Insufficient SOL on Solana testnet."
+            echo "::error::Wallet: $wallet"
+            echo "::error::Current balance: ${actual_sol} SOL"
+            echo "::error::Minimum required: ${required_sol} SOL"
+            echo "::error::Fund this wallet on testnet, then rerun the workflow."
+            exit 1
+          fi
+
+          echo "Deployment wallet has sufficient funds."
 
       - name: Deploy Programs
         working-directory: ./solana
@@ -266,5 +313,6 @@ jobs:
             echo "Deploying $name from $artifact"
             solana program deploy \
               --keypair "$SOLANA_KEYPAIR_PATH" \
+              --url "$SOLANA_RPC_URL" \
               "$artifact"
           done
