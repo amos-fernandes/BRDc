@@ -177,18 +177,50 @@ jobs:
           cargo-build-sbf --version
 
       - name: Configure Wallet
+        shell: bash
+        env:
+          SOLANA_KEYPAIR_SECRET: ${{ secrets.SOLANA_KEYPAIR }}
         run: |
-          echo "${{ secrets.SOLANA_KEYPAIR }}" > keypair.json
-          solana config set --keypair keypair.json --url https://api.testnet.solana.com
+          set -euo pipefail
+
+          KEYPAIR_PATH="$RUNNER_TEMP/solana-deployer.json"
+
+          if [[ -z "${SOLANA_KEYPAIR_SECRET}" ]]; then
+            echo "::error::SOLANA_KEYPAIR secret is empty or unavailable"
+            exit 1
+          fi
+
+          printf '%s' "$SOLANA_KEYPAIR_SECRET" > "$KEYPAIR_PATH"
+          chmod 600 "$KEYPAIR_PATH"
+
+          # Confirms that the secret contains a valid Solana keypair.
+          solana address --keypair "$KEYPAIR_PATH"
+
+          solana config set \
+            --keypair "$KEYPAIR_PATH" \
+            --url https://api.testnet.solana.com
+
+          echo "SOLANA_KEYPAIR_PATH=$KEYPAIR_PATH" >> "$GITHUB_ENV"
 
       - name: Deploy Programs
         working-directory: ./solana
         shell: bash
         run: |
-          set -euxo pipefail
+          set -euo pipefail
           export PATH="$SOLANA_BIN:$PATH"
 
-          solana program deploy target/deploy/libbrdc_oracle_bridge.so
-          solana program deploy target/deploy/libbrdc_solana_token.so
-          solana program deploy target/deploy/libbrdc_solana_reserve.so
-          solana program deploy target/deploy/libbrdc_solana_governance.so
+          solana program deploy \
+            --keypair "$SOLANA_KEYPAIR_PATH" \
+            target/deploy/libbrdc_oracle_bridge.so
+
+          solana program deploy \
+            --keypair "$SOLANA_KEYPAIR_PATH" \
+            target/deploy/libbrdc_solana_token.so
+
+          solana program deploy \
+            --keypair "$SOLANA_KEYPAIR_PATH" \
+            target/deploy/libbrdc_solana_reserve.so
+
+          solana program deploy \
+            --keypair "$SOLANA_KEYPAIR_PATH" \
+            target/deploy/libbrdc_solana_governance.so
