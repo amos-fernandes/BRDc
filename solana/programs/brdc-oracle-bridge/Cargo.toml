@@ -13,4 +13,5 @@ no-entrypoint = []
 
 [dependencies]
 solana-program = { workspace = true }
-bytemuck = "1.12"
+bytemuck = { workspace = true }
+cpufeatures = { workspace = true }

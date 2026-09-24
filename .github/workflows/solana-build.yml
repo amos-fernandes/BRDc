@@ -86,6 +86,8 @@ jobs:
           command -v cargo-build-sbf
           cargo-build-sbf --version
 
+          cargo build-sbf --help >/dev/null
+
       - name: Cache cargo
         uses: actions/cache@v4
         with:
