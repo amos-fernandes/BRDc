@@ -40,13 +40,33 @@ jobs:
           cargo --version
 
       - name: Install Solana CLI
+        shell: bash
         run: |
           set -euxo pipefail
-          sh -c "$(curl -sSfL https://release.solana.com/v2.3.0/install)"
-          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+          sh -c "$(curl --proto '=https' --tlsv1.2 --retry 10 \
+            --retry-all-errors --location --fail \
+            https://release.solana.com/v2.3.0/install)"
+
+          SOLANA_BIN="$HOME/.local/share/solana/install/active_release/bin"
+
+          test -x "$SOLANA_BIN/solana"
+          test -x "$SOLANA_BIN/cargo-build-sbf"
+
+          echo "$SOLANA_BIN" >> "$GITHUB_PATH"
+          echo "SOLANA_BIN=$SOLANA_BIN" >> "$GITHUB_ENV"
+          export PATH="$SOLANA_BIN:$PATH"
+
+          "$SOLANA_BIN/solana" --version
+          "$SOLANA_BIN/cargo-build-sbf" --version
 
       - name: Verify Solana build tools
+        shell: bash
         run: |
+          set -euxo pipefail
+
+          export PATH="$SOLANA_BIN:$PATH"
+
           command -v solana
           command -v cargo-build-sbf
           solana --version
@@ -63,8 +83,11 @@ jobs:
 
       - name: Build Programs
         working-directory: ./solana
+        shell: bash
         run: |
           set -euxo pipefail
+          export PATH="$SOLANA_BIN:$PATH"
+
           cargo build-sbf --verbose --manifest-path programs/brdc-oracle-bridge/Cargo.toml
           cargo build-sbf --verbose --manifest-path programs/brdc-token/Cargo.toml
           cargo build-sbf --verbose --manifest-path programs/brdc-reserve/Cargo.toml
@@ -90,10 +113,25 @@ jobs:
           path: solana/target/deploy
 
       - name: Install Solana CLI
+        shell: bash
         run: |
           set -euxo pipefail
-          sh -c "$(curl -sSfL https://release.solana.com/v2.3.0/install)"
-          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+          sh -c "$(curl --proto '=https' --tlsv1.2 --retry 10 \
+            --retry-all-errors --location --fail \
+            https://release.solana.com/v2.3.0/install)"
+
+          SOLANA_BIN="$HOME/.local/share/solana/install/active_release/bin"
+
+          test -x "$SOLANA_BIN/solana"
+          test -x "$SOLANA_BIN/cargo-build-sbf"
+
+          echo "$SOLANA_BIN" >> "$GITHUB_PATH"
+          echo "SOLANA_BIN=$SOLANA_BIN" >> "$GITHUB_ENV"
+          export PATH="$SOLANA_BIN:$PATH"
+
+          "$SOLANA_BIN/solana" --version
+          "$SOLANA_BIN/cargo-build-sbf" --version
 
       - name: Configure Wallet
         run: |
@@ -102,8 +140,11 @@ jobs:
 
       - name: Deploy Programs
         working-directory: ./solana
+        shell: bash
         run: |
           set -euxo pipefail
+          export PATH="$SOLANA_BIN:$PATH"
+
           solana program deploy target/deploy/libbrdc_oracle_bridge.so
           solana program deploy target/deploy/libbrdc_solana_token.so
           solana program deploy target/deploy/libbrdc_solana_reserve.so
