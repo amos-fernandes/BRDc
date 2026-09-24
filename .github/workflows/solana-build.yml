@@ -104,6 +104,9 @@ jobs:
           set -euxo pipefail
           export PATH="$SOLANA_BIN:$PATH"
 
+          rm -rf target/deploy
+          mkdir -p target/deploy
+
           cargo build-sbf \
             --verbose \
             --manifest-path programs/brdc-oracle-bridge/Cargo.toml \
@@ -147,20 +150,36 @@ jobs:
       - name: Verify deployment artifacts
         shell: bash
         run: |
-          set -euxo pipefail
+          set -euo pipefail
 
-          find solana/target/deploy -maxdepth 1 -type f -name '*.so' -print
+          declare -A expected=(
+            [oracle]="brdc_oracle_bridge.so"
+            [token]="brdc_solana_token.so"
+            [reserve]="brdc_solana_reserve.so"
+            [governance]="brdc_solana_governance.so"
+          )
 
-          for program in \
-            libbrdc_oracle_bridge.so \
-            libbrdc_solana_token.so \
-            libbrdc_solana_reserve.so \
-            libbrdc_solana_governance.so
-          do
-            test -f "solana/target/deploy/$program" || {
-              echo "::error::Missing deployment artifact: $program"
+          for name in "${!expected[@]}"; do
+            artifact="solana/target/deploy/${expected[$name]}"
+
+            if [[ ! -f "$artifact" ]]; then
+              echo "::error::Missing deployment artifact for $name: $artifact"
+              echo "Available artifacts:"
+              find solana/target/deploy \
+                -maxdepth 1 \
+                -type f \
+                -name '*.so' \
+                -printf '  %f\n' \
+                | sort
               exit 1
-            }
+            fi
+
+            if [[ ! -s "$artifact" ]]; then
+              echo "::error::Deployment artifact is empty: $artifact"
+              exit 1
+            fi
+
+            echo "Verified $name: $artifact"
           done
 
       - name: Install Solana CLI
@@ -229,20 +248,23 @@ jobs:
           set -euo pipefail
           export PATH="$SOLANA_BIN:$PATH"
 
-          # Resolve artifacts by pattern to avoid hardcoded names
-          oracle=$(find target/deploy -maxdepth 1 -type f -name '*oracle*bridge*.so' | head -n 1)
-          token=$(find target/deploy -maxdepth 1 -type f -name '*token*.so' | head -n 1)
-          reserve=$(find target/deploy -maxdepth 1 -type f -name '*reserve*.so' | head -n 1)
-          governance=$(find target/deploy -maxdepth 1 -type f -name '*governance*.so' | head -n 1)
+          declare -A programs=(
+            [oracle]="target/deploy/brdc_oracle_bridge.so"
+            [token]="target/deploy/brdc_solana_token.so"
+            [reserve]="target/deploy/brdc_solana_reserve.so"
+            [governance]="target/deploy/brdc_solana_governance.so"
+          )
 
-          for p in "$oracle" "$token" "$reserve" "$governance"; do
-            [ -n "$p" ] && [ -f "$p" ] || {
-              echo "::error::Could not resolve artifact: $p"
+          for name in "${!programs[@]}"; do
+            artifact="${programs[$name]}"
+
+            if [[ ! -s "$artifact" ]]; then
+              echo "::error::Invalid or missing artifact for $name: $artifact"
               exit 1
-            }
-          done
+            fi
 
-          solana program deploy --keypair "$SOLANA_KEYPAIR_PATH" "$oracle"
-          solana program deploy --keypair "$SOLANA_KEYPAIR_PATH" "$token"
-          solana program deploy --keypair "$SOLANA_KEYPAIR_PATH" "$reserve"
-          solana program deploy --keypair "$SOLANA_KEYPAIR_PATH" "$governance"
+            echo "Deploying $name from $artifact"
+            solana program deploy \
+              --keypair "$SOLANA_KEYPAIR_PATH" \
+              "$artifact"
+          done
