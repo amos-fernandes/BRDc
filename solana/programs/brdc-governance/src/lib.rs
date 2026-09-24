@@ -7,48 +7,12 @@ use solana_program::{
     pubkey::Pubkey,
     sysvar::{clock::Clock, Sysvar},
 };
+use bytemuck::{Pod, Zeroable};
 
 entrypoint!(process_instruction);
 
-#[derive(Debug)]
-pub enum GovernanceInstruction {
-    Initialize { voting_period: u64, quorum: u64, min_balance: u64 },
-    CreateProposal { description: String },
-    Vote { proposal_id: u64, support: bool },
-    ExecuteProposal { proposal_id: u64 },
-}
-
-impl GovernanceInstruction {
-    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
-        let (&tag, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
-        Ok(match tag {
-            0 => {
-                let voting_period = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                let quorum = u64::from_le_bytes(rest[8..16].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                let min_balance = u64::from_le_bytes(rest[16..24].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                Self::Initialize { voting_period, quorum, min_balance }
-            }
-            1 => {
-                let len = u32::from_le_bytes(rest[..4].try_into().map_err(|_| ProgramError::InvalidInstructionData)?) as usize;
-                let desc = std::str::from_utf8(&rest[4..4+len]).map_err(|_| ProgramError::InvalidInstructionData)?;
-                Self::CreateProposal { description: desc.to_string() }
-            }
-            2 => {
-                let proposal_id = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                let support = rest[8] != 0;
-                Self::Vote { proposal_id, support }
-            }
-            3 => {
-                let proposal_id = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                Self::ExecuteProposal { proposal_id }
-            }
-            _ => return Err(ProgramError::InvalidInstructionData),
-        })
-    }
-}
-
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Pod, Zeroable)]
 pub struct GovState {
     pub admin: Pubkey,
     pub voting_period: u64,
@@ -120,7 +84,6 @@ fn process_instruction(
                 return Err(ProgramError::MissingRequiredSignature);
             }
             
-            // In real impl, would check voter balance and track votes
             Ok(())
         }
         GovernanceInstruction::ExecuteProposal { proposal_id } => {
@@ -143,5 +106,42 @@ fn process_instruction(
             msg!("Executed proposal {}", proposal_id);
             Ok(())
         }
+    }
+}
+
+#[derive(Debug)]
+pub enum GovernanceInstruction {
+    Initialize { voting_period: u64, quorum: u64, min_balance: u64 },
+    CreateProposal { description: String },
+    Vote { proposal_id: u64, support: bool },
+    ExecuteProposal { proposal_id: u64 },
+}
+
+impl GovernanceInstruction {
+    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
+        let (&tag, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
+        Ok(match tag {
+            0 => {
+                let voting_period = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                let quorum = u64::from_le_bytes(rest[8..16].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                let min_balance = u64::from_le_bytes(rest[16..24].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                Self::Initialize { voting_period, quorum, min_balance }
+            }
+            1 => {
+                let len = u32::from_le_bytes(rest[..4].try_into().map_err(|_| ProgramError::InvalidInstructionData)?) as usize;
+                let desc = std::str::from_utf8(&rest[4..4+len]).map_err(|_| ProgramError::InvalidInstructionData)?;
+                Self::CreateProposal { description: desc.to_string() }
+            }
+            2 => {
+                let proposal_id = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                let support = rest[8] != 0;
+                Self::Vote { proposal_id, support }
+            }
+            3 => {
+                let proposal_id = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                Self::ExecuteProposal { proposal_id }
+            }
+            _ => return Err(ProgramError::InvalidInstructionData),
+        })
     }
 }

@@ -1,0 +1,1 @@
+{"$message_type":"unused_extern","lint_level":"force-warn","unused_extern_names":["bv","curve25519_dalek","five8_const","rand","sha2"]}

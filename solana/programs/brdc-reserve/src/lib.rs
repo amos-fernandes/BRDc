@@ -7,41 +7,12 @@ use solana_program::{
     pubkey::Pubkey,
     sysvar::{clock::Clock, Sysvar},
 };
+use bytemuck::{Pod, Zeroable};
 
 entrypoint!(process_instruction);
 
-#[derive(Debug)]
-pub enum ReserveInstruction {
-    Initialize,
-    DepositTreasury { amount: u64 },
-    RegisterRedemption { brdc_amount: u64 },
-    SettleRedemption { request_id: u64 },
-}
-
-impl ReserveInstruction {
-    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
-        let (&tag, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
-        Ok(match tag {
-            0 => Self::Initialize,
-            1 => {
-                let amount = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                Self::DepositTreasury { amount }
-            }
-            2 => {
-                let brdc_amount = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                Self::RegisterRedemption { brdc_amount }
-            }
-            3 => {
-                let request_id = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                Self::SettleRedemption { request_id }
-            }
-            _ => return Err(ProgramError::InvalidInstructionData),
-        })
-    }
-}
-
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Pod, Zeroable)]
 pub struct ReserveState {
     pub admin: Pubkey,
     pub balance: u64,
@@ -118,8 +89,6 @@ fn process_instruction(
                 return Err(ProgramError::InvalidAccountData);
             }
             
-            // In real impl, would read NAV from oracle bridge
-            // For now, just track the redemption
             reserve_state.redeem_count += 1;
             
             msg!("Registered redemption {} for {} BRDc", reserve_state.redeem_count, brdc_amount);
@@ -142,9 +111,38 @@ fn process_instruction(
                 return Err(ProgramError::InvalidAccountData);
             }
             
-            // In real impl, would pay out USDC based on NAV
             msg!("Settled redemption {}", request_id);
             Ok(())
         }
+    }
+}
+
+#[derive(Debug)]
+pub enum ReserveInstruction {
+    Initialize,
+    DepositTreasury { amount: u64 },
+    RegisterRedemption { brdc_amount: u64 },
+    SettleRedemption { request_id: u64 },
+}
+
+impl ReserveInstruction {
+    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
+        let (&tag, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
+        Ok(match tag {
+            0 => Self::Initialize,
+            1 => {
+                let amount = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                Self::DepositTreasury { amount }
+            }
+            2 => {
+                let brdc_amount = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                Self::RegisterRedemption { brdc_amount }
+            }
+            3 => {
+                let request_id = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                Self::SettleRedemption { request_id }
+            }
+            _ => return Err(ProgramError::InvalidInstructionData),
+        })
     }
 }

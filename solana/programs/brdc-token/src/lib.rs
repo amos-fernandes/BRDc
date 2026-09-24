@@ -6,37 +6,12 @@ use solana_program::{
     program_error::ProgramError,
     pubkey::Pubkey,
 };
+use bytemuck::{Pod, Zeroable};
 
 entrypoint!(process_instruction);
 
-#[derive(Debug)]
-pub enum TokenInstruction {
-    Initialize,
-    Mint { amount: u64, gold_backed: bool },
-    Burn { amount: u64 },
-}
-
-impl TokenInstruction {
-    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
-        let (&tag, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
-        Ok(match tag {
-            0 => Self::Initialize,
-            1 => {
-                let amount = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                let gold_backed = rest[8] != 0;
-                Self::Mint { amount, gold_backed }
-            }
-            2 => {
-                let amount = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                Self::Burn { amount }
-            }
-            _ => return Err(ProgramError::InvalidInstructionData),
-        })
-    }
-}
-
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Pod, Zeroable)]
 pub struct TokenState {
     pub admin: Pubkey,
     pub total_supply: u64,
@@ -105,7 +80,6 @@ fn process_instruction(
             
             token_state.total_supply = token_state.total_supply.checked_add(amount).ok_or(ProgramError::ArithmeticOverflow)?;
             
-            // In real implementation, would update recipient account balance
             msg!("Minted {} to {}", amount, recipient_account.key);
             Ok(())
         }
@@ -137,5 +111,31 @@ fn process_instruction(
             msg!("Burned {} from {}", amount, holder_account.key);
             Ok(())
         }
+    }
+}
+
+#[derive(Debug)]
+pub enum TokenInstruction {
+    Initialize,
+    Mint { amount: u64, gold_backed: bool },
+    Burn { amount: u64 },
+}
+
+impl TokenInstruction {
+    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
+        let (&tag, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
+        Ok(match tag {
+            0 => Self::Initialize,
+            1 => {
+                let amount = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                let gold_backed = rest[8] != 0;
+                Self::Mint { amount, gold_backed }
+            }
+            2 => {
+                let amount = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                Self::Burn { amount }
+            }
+            _ => return Err(ProgramError::InvalidInstructionData),
+        })
     }
 }

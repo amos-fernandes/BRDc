@@ -7,33 +7,12 @@ use solana_program::{
     pubkey::Pubkey,
     sysvar::{clock::Clock, Sysvar},
 };
+use bytemuck::{Pod, Zeroable};
 
 entrypoint!(process_instruction);
 
-#[derive(Debug)]
-pub enum OracleInstruction {
-    Initialize,
-    UpdateNav { new_nav: u64 },
-    GetNav,
-}
-
-impl OracleInstruction {
-    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
-        let (&tag, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
-        Ok(match tag {
-            0 => Self::Initialize,
-            1 => {
-                let new_nav = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
-                Self::UpdateNav { new_nav }
-            }
-            2 => Self::GetNav,
-            _ => return Err(ProgramError::InvalidInstructionData),
-        })
-    }
-}
-
 #[repr(C)]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Pod, Zeroable)]
 pub struct BridgeState {
     pub admin: Pubkey,
     pub last_nav: u64,
@@ -109,5 +88,27 @@ fn process_instruction(
             msg!("Current NAV: {}, updated at {}", bridge_state.last_nav, bridge_state.last_update_timestamp);
             Ok(())
         }
+    }
+}
+
+#[derive(Debug)]
+pub enum OracleInstruction {
+    Initialize,
+    UpdateNav { new_nav: u64 },
+    GetNav,
+}
+
+impl OracleInstruction {
+    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
+        let (&tag, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
+        Ok(match tag {
+            0 => Self::Initialize,
+            1 => {
+                let new_nav = u64::from_le_bytes(rest[..8].try_into().map_err(|_| ProgramError::InvalidInstructionData)?);
+                Self::UpdateNav { new_nav }
+            }
+            2 => Self::GetNav,
+            _ => return Err(ProgramError::InvalidInstructionData),
+        })
     }
 }
