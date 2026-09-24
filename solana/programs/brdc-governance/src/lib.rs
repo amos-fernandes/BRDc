@@ -12,9 +12,9 @@ use bytemuck::{Pod, Zeroable};
 entrypoint!(process_instruction);
 
 #[repr(C)]
-#[derive(Debug, Default, Pod, Zeroable)]
+#[derive(Debug, Default, Copy, Clone, Pod, Zeroable)]
 pub struct GovState {
-    pub admin: Pubkey,
+    pub admin: [u8; 32],
     pub voting_period: u64,
     pub quorum: u64,
     pub min_balance: u64,
@@ -40,7 +40,7 @@ fn process_instruction(
             }
             
             let mut gov_state = GovState::default();
-            gov_state.admin = *admin_account.key;
+            gov_state.admin.copy_from_slice(admin_account.key.as_ref());
             gov_state.voting_period = voting_period;
             gov_state.quorum = quorum;
             gov_state.min_balance = min_balance;
@@ -65,13 +65,14 @@ fn process_instruction(
             let mut gov_data = gov_account.try_borrow_mut_data()?;
             let gov_state = bytemuck::from_bytes_mut::<GovState>(&mut gov_data);
             
-            if gov_state.admin != *admin_account.key {
+            if gov_state.admin != admin_account.key.as_ref() {
                 return Err(ProgramError::InvalidAccountData);
             }
             
             gov_state.prop_count += 1;
             
-            msg!("Created proposal {}: {}", gov_state.prop_count, description);
+            let count = gov_state.prop_count;
+            msg!("Created proposal {}: {}", count, description);
             Ok(())
         }
         GovernanceInstruction::Vote { proposal_id, support } => {
@@ -99,7 +100,7 @@ fn process_instruction(
             let mut gov_data = gov_account.try_borrow_mut_data()?;
             let gov_state = bytemuck::from_bytes_mut::<GovState>(&mut gov_data);
             
-            if gov_state.admin != *executor_account.key {
+            if gov_state.admin != executor_account.key.as_ref() {
                 return Err(ProgramError::InvalidAccountData);
             }
             

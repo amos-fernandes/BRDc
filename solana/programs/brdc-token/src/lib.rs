@@ -11,15 +11,16 @@ use bytemuck::{Pod, Zeroable};
 entrypoint!(process_instruction);
 
 #[repr(C)]
-#[derive(Debug, Default, Pod, Zeroable)]
+#[derive(Debug, Default, Copy, Clone, Pod, Zeroable)]
 pub struct TokenState {
-    pub admin: Pubkey,
+    pub admin: [u8; 32],
     pub total_supply: u64,
     pub gold_reserves: u64,
     pub gold_backed_supply: u64,
-    pub paused: bool,
     pub min_gold_redemption: u64,
     pub redemption_fee_bps: u16,
+    pub paused: u8,
+    pub _padding: [u8; 5],
 }
 
 fn process_instruction(
@@ -41,7 +42,7 @@ fn process_instruction(
             }
             
             let mut token_state = TokenState::default();
-            token_state.admin = *admin_account.key;
+            token_state.admin.copy_from_slice(admin_account.key.as_ref());
             token_state.min_gold_redemption = 10_000_000_000;
             token_state.redemption_fee_bps = 30;
             
@@ -66,7 +67,7 @@ fn process_instruction(
             let mut token_data = token_state_account.try_borrow_mut_data()?;
             let token_state = bytemuck::from_bytes_mut::<TokenState>(&mut token_data);
             
-            if token_state.admin != *admin_account.key {
+            if token_state.admin != admin_account.key.as_ref() {
                 return Err(ProgramError::InvalidAccountData);
             }
             
@@ -97,7 +98,7 @@ fn process_instruction(
             let mut token_data = token_state_account.try_borrow_mut_data()?;
             let token_state = bytemuck::from_bytes_mut::<TokenState>(&mut token_data);
             
-            if token_state.admin != *admin_account.key {
+            if token_state.admin != admin_account.key.as_ref() {
                 return Err(ProgramError::InvalidAccountData);
             }
             

@@ -12,9 +12,9 @@ use bytemuck::{Pod, Zeroable};
 entrypoint!(process_instruction);
 
 #[repr(C)]
-#[derive(Debug, Default, Pod, Zeroable)]
+#[derive(Debug, Default, Copy, Clone, Pod, Zeroable)]
 pub struct BridgeState {
-    pub admin: Pubkey,
+    pub admin: [u8; 32],
     pub last_nav: u64,
     pub last_update_timestamp: i64,
 }
@@ -38,7 +38,7 @@ fn process_instruction(
             }
             
             let mut bridge_state = BridgeState::default();
-            bridge_state.admin = *admin_account.key;
+            bridge_state.admin.copy_from_slice(admin_account.key.as_ref());
             bridge_state.last_nav = 0;
             bridge_state.last_update_timestamp = 0;
             
@@ -62,7 +62,7 @@ fn process_instruction(
             let mut bridge_data = bridge_account.try_borrow_mut_data()?;
             let bridge_state = bytemuck::from_bytes_mut::<BridgeState>(&mut bridge_data);
             
-            if bridge_state.admin != *admin_account.key {
+            if bridge_state.admin != admin_account.key.as_ref() {
                 return Err(ProgramError::InvalidAccountData);
             }
             
@@ -70,7 +70,9 @@ fn process_instruction(
             bridge_state.last_nav = new_nav;
             bridge_state.last_update_timestamp = clock.unix_timestamp;
             
-            msg!("NAV updated to {} at {}", new_nav, clock.unix_timestamp);
+            let nav = bridge_state.last_nav;
+            let timestamp = bridge_state.last_update_timestamp;
+            msg!("NAV updated to {} at {}", nav, timestamp);
             Ok(())
         }
         OracleInstruction::GetNav => {
@@ -85,7 +87,9 @@ fn process_instruction(
                 return Err(ProgramError::InvalidAccountData);
             }
             
-            msg!("Current NAV: {}, updated at {}", bridge_state.last_nav, bridge_state.last_update_timestamp);
+            let nav = bridge_state.last_nav;
+            let timestamp = bridge_state.last_update_timestamp;
+            msg!("Current NAV: {}, updated at {}", nav, timestamp);
             Ok(())
         }
     }

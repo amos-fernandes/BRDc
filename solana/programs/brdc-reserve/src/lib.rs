@@ -12,11 +12,11 @@ use bytemuck::{Pod, Zeroable};
 entrypoint!(process_instruction);
 
 #[repr(C)]
-#[derive(Debug, Default, Pod, Zeroable)]
+#[derive(Debug, Default, Copy, Clone, Pod, Zeroable)]
 pub struct ReserveState {
-    pub admin: Pubkey,
+    pub admin: [u8; 32],
     pub balance: u64,
-    pub settler: Pubkey,
+    pub settler: [u8; 32],
     pub redeem_count: u64,
     pub snapshot_count: u64,
 }
@@ -40,8 +40,8 @@ fn process_instruction(
             }
             
             let mut reserve_state = ReserveState::default();
-            reserve_state.admin = *admin_account.key;
-            reserve_state.settler = *admin_account.key;
+            reserve_state.admin.copy_from_slice(admin_account.key.as_ref());
+            reserve_state.settler.copy_from_slice(admin_account.key.as_ref());
             
             let mut data = reserve_account.try_borrow_mut_data()?;
             let bytes = bytemuck::bytes_of(&reserve_state);
@@ -63,7 +63,7 @@ fn process_instruction(
             let mut reserve_data = reserve_account.try_borrow_mut_data()?;
             let reserve_state = bytemuck::from_bytes_mut::<ReserveState>(&mut reserve_data);
             
-            if reserve_state.admin != *admin_account.key {
+            if reserve_state.admin != admin_account.key.as_ref() {
                 return Err(ProgramError::InvalidAccountData);
             }
             
@@ -85,13 +85,14 @@ fn process_instruction(
             let mut reserve_data = reserve_account.try_borrow_mut_data()?;
             let reserve_state = bytemuck::from_bytes_mut::<ReserveState>(&mut reserve_data);
             
-            if reserve_state.settler != *settler_account.key {
+            if reserve_state.settler != settler_account.key.as_ref() {
                 return Err(ProgramError::InvalidAccountData);
             }
             
             reserve_state.redeem_count += 1;
             
-            msg!("Registered redemption {} for {} BRDc", reserve_state.redeem_count, brdc_amount);
+            let count = reserve_state.redeem_count;
+            msg!("Registered redemption {} for {} BRDc", count, brdc_amount);
             Ok(())
         }
         ReserveInstruction::SettleRedemption { request_id } => {
@@ -107,7 +108,7 @@ fn process_instruction(
             let mut reserve_data = reserve_account.try_borrow_mut_data()?;
             let reserve_state = bytemuck::from_bytes_mut::<ReserveState>(&mut reserve_data);
             
-            if reserve_state.settler != *settler_account.key {
+            if reserve_state.settler != settler_account.key.as_ref() {
                 return Err(ProgramError::InvalidAccountData);
             }
             

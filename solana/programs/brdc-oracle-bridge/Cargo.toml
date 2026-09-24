@@ -14,5 +14,5 @@ no-entrypoint = []
 [dependencies]
 solana-program = { workspace = true }
 bytemuck = { workspace = true }
-cpufeatures = { workspace = true }
 blake3 = { workspace = true }
+cpufeatures = { workspace = true }
