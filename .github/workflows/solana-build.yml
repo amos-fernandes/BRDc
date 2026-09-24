@@ -129,6 +129,7 @@ jobs:
         with:
           name: solana-programs
           path: solana/target/deploy/*.so
+          if-no-files-found: error
 
   deploy:
     needs: build
@@ -142,6 +143,25 @@ jobs:
         with:
           name: solana-programs
           path: solana/target/deploy
+
+      - name: Verify deployment artifacts
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          find solana/target/deploy -maxdepth 1 -type f -name '*.so' -print
+
+          for program in \
+            libbrdc_oracle_bridge.so \
+            libbrdc_solana_token.so \
+            libbrdc_solana_reserve.so \
+            libbrdc_solana_governance.so
+          do
+            test -f "solana/target/deploy/$program" || {
+              echo "::error::Missing deployment artifact: $program"
+              exit 1
+            }
+          done
 
       - name: Install Solana CLI
         shell: bash
@@ -209,18 +229,20 @@ jobs:
           set -euo pipefail
           export PATH="$SOLANA_BIN:$PATH"
 
-          solana program deploy \
-            --keypair "$SOLANA_KEYPAIR_PATH" \
-            target/deploy/libbrdc_oracle_bridge.so
+          # Resolve artifacts by pattern to avoid hardcoded names
+          oracle=$(find target/deploy -maxdepth 1 -type f -name '*oracle*bridge*.so' | head -n 1)
+          token=$(find target/deploy -maxdepth 1 -type f -name '*token*.so' | head -n 1)
+          reserve=$(find target/deploy -maxdepth 1 -type f -name '*reserve*.so' | head -n 1)
+          governance=$(find target/deploy -maxdepth 1 -type f -name '*governance*.so' | head -n 1)
 
-          solana program deploy \
-            --keypair "$SOLANA_KEYPAIR_PATH" \
-            target/deploy/libbrdc_solana_token.so
+          for p in "$oracle" "$token" "$reserve" "$governance"; do
+            [ -n "$p" ] && [ -f "$p" ] || {
+              echo "::error::Could not resolve artifact: $p"
+              exit 1
+            }
+          done
 
-          solana program deploy \
-            --keypair "$SOLANA_KEYPAIR_PATH" \
-            target/deploy/libbrdc_solana_reserve.so
-
-          solana program deploy \
-            --keypair "$SOLANA_KEYPAIR_PATH" \
-            target/deploy/libbrdc_solana_governance.so
+          solana program deploy --keypair "$SOLANA_KEYPAIR_PATH" "$oracle"
+          solana program deploy --keypair "$SOLANA_KEYPAIR_PATH" "$token"
+          solana program deploy --keypair "$SOLANA_KEYPAIR_PATH" "$reserve"
+          solana program deploy --keypair "$SOLANA_KEYPAIR_PATH" "$governance"
