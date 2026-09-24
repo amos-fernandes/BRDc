@@ -7,6 +7,9 @@ on:
     paths:
       - 'solana/**'
 
+env:
+  SOLANA_VERSION: v2.3.6
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -44,7 +47,6 @@ jobs:
         run: |
           set -euxo pipefail
 
-          SOLANA_VERSION="v2.3.0"
           INSTALLER_URL="https://release.anza.xyz/${SOLANA_VERSION}/install"
 
           curl --proto '=https' \
@@ -70,19 +72,18 @@ jobs:
           echo "SOLANA_BIN=$SOLANA_BIN" >> "$GITHUB_ENV"
           export PATH="$SOLANA_BIN:$PATH"
 
-          "$SOLANA_BIN/solana" --version
-          "$SOLANA_BIN/cargo-build-sbf" --version
+          solana --version
+          cargo-build-sbf --version
 
-      - name: Verify Solana build tools
+      - name: Verify Solana build toolchain
         shell: bash
         run: |
           set -euxo pipefail
-
           export PATH="$SOLANA_BIN:$PATH"
 
-          command -v solana
+          command -v cargo
+          cargo --version
           command -v cargo-build-sbf
-          solana --version
           cargo-build-sbf --version
 
       - name: Cache cargo
@@ -130,7 +131,6 @@ jobs:
         run: |
           set -euxo pipefail
 
-          SOLANA_VERSION="v2.3.0"
           INSTALLER_URL="https://release.anza.xyz/${SOLANA_VERSION}/install"
 
           curl --proto '=https' \
@@ -156,8 +156,8 @@ jobs:
           echo "SOLANA_BIN=$SOLANA_BIN" >> "$GITHUB_ENV"
           export PATH="$SOLANA_BIN:$PATH"
 
-          "$SOLANA_BIN/solana" --version
-          "$SOLANA_BIN/cargo-build-sbf" --version
+          solana --version
+          cargo-build-sbf --version
 
       - name: Configure Wallet
         run: |
