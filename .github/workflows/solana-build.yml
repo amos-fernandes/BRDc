@@ -17,7 +17,7 @@ jobs:
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          rustup target add sbf-solana-solana
+          . "$HOME/.cargo/env"
 
       - name: Install Solana CLI
         run: |
@@ -59,12 +59,6 @@ jobs:
         with:
           name: solana-programs
           path: solana/target/deploy
-
-      - name: Install Rust
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          rustup target add sbf-solana-solana
 
       - name: Install Solana CLI
         run: |
