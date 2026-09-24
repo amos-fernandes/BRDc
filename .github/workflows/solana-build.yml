@@ -23,20 +23,12 @@ jobs:
           sh -c "$(curl -sSfL https://release.solana.com/v2.3.0/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
 
-      - name: Install cargo-build-sbf from Agave
+      - name: Verify Solana build tools
         run: |
-          cargo install \
-            --git https://github.com/anza-xyz/agave \
-            --tag v2.3.0 \
-            --locked \
-            cargo-build-sbf
-
-      - name: Verify installations
-        run: |
-          rustc --version
-          cargo --version
-          cargo build-sbf --version
+          command -v solana
+          command -v cargo-build-sbf
           solana --version
+          cargo-build-sbf --version
 
       - name: Cache cargo
         uses: actions/cache@v4
