@@ -1,0 +1,13 @@
+/home/amos/dev/BRDc/solana/target/debug/build/toml/74fd2b13423d8b68/out/toml-74fd2b13423d8b68.d: /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/lib.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/map.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/value.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/datetime.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/ser.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/de.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/tokens.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/macros.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/spanned.rs
+
+/home/amos/dev/BRDc/solana/target/debug/build/toml/74fd2b13423d8b68/out/libtoml-74fd2b13423d8b68.rmeta: /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/lib.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/map.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/value.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/datetime.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/ser.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/de.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/tokens.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/macros.rs /home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/spanned.rs
+
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/lib.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/map.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/value.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/datetime.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/ser.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/de.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/tokens.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/macros.rs:
+/home/amos/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/toml-0.5.11/src/spanned.rs:
