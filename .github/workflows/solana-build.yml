@@ -23,16 +23,17 @@ jobs:
         run: |
           sh -c "$(curl -sSfL https://release.solana.com/v2.3.0/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
-          # Also add platform tools SDK path
-          echo "$HOME/.local/share/solana/install/active_release/bin/platform-tools-sdk/sbf/dependencies/platform-tools/rust/bin" >> $GITHUB_PATH
+
+      - name: Install cargo-build-sbf
+        run: |
+          cargo install cargo-build-sbf --locked
 
       - name: Verify installations
         run: |
           rustc --version
           cargo --version
-          cargo --list | grep build-sbf || echo "build-sbf not found, checking path..."
+          cargo build-sbf --version
           which solana
-          ls -la $HOME/.local/share/solana/install/active_release/bin/
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -45,8 +46,6 @@ jobs:
 
       - name: Build Programs
         working-directory: ./solana
-        env:
-          PATH: ${{ env.PATH }}:$HOME/.cargo/bin:$HOME/.local/share/solana/install/active_release/bin:$HOME/.local/share/solana/install/active_release/bin/platform-tools-sdk/sbf/dependencies/platform-tools/rust/bin
         run: |
           cargo build-sbf --manifest-path programs/brdc-oracle-bridge/Cargo.toml
           cargo build-sbf --manifest-path programs/brdc-token/Cargo.toml
