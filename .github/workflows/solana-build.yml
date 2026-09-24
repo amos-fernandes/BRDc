@@ -9,19 +9,20 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          rustup target add sbf-solana-solana
 
       - name: Install Solana CLI
         run: |
           sh -c "$(curl -sSfL https://release.solana.com/v2.3.0/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          target: sbf-solana-solana
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -49,7 +50,7 @@ jobs:
   deploy:
     needs: build
     if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
@@ -58,6 +59,12 @@ jobs:
         with:
           name: solana-programs
           path: solana/target/deploy
+
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          rustup target add sbf-solana-solana
 
       - name: Install Solana CLI
         run: |
