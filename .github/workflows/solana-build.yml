@@ -104,10 +104,25 @@ jobs:
           set -euxo pipefail
           export PATH="$SOLANA_BIN:$PATH"
 
-          cargo build-sbf --locked --verbose --manifest-path programs/brdc-oracle-bridge/Cargo.toml
-          cargo build-sbf --locked --verbose --manifest-path programs/brdc-token/Cargo.toml
-          cargo build-sbf --locked --verbose --manifest-path programs/brdc-reserve/Cargo.toml
-          cargo build-sbf --locked --verbose --manifest-path programs/brdc-governance/Cargo.toml
+          cargo build-sbf \
+            --verbose \
+            --manifest-path programs/brdc-oracle-bridge/Cargo.toml \
+            -- --locked
+
+          cargo build-sbf \
+            --verbose \
+            --manifest-path programs/brdc-token/Cargo.toml \
+            -- --locked
+
+          cargo build-sbf \
+            --verbose \
+            --manifest-path programs/brdc-reserve/Cargo.toml \
+            -- --locked
+
+          cargo build-sbf \
+            --verbose \
+            --manifest-path programs/brdc-governance/Cargo.toml \
+            -- --locked
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
