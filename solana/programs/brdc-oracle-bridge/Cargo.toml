@@ -15,7 +15,6 @@ no-entrypoint = []
 solana-program = { workspace = true }
 bytemuck = { workspace = true }
 blake3 = { workspace = true }
-cpufeatures = { workspace = true }
 proc-macro-crate = { workspace = true }
 toml_edit = { workspace = true }
 toml_parser = { workspace = true }

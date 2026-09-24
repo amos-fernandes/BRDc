@@ -166,7 +166,6 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "bytemuck",
- "cpufeatures",
  "proc-macro-crate 0.1.5",
  "solana-program",
  "toml_datetime 0.6.5",
@@ -180,7 +179,6 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "bytemuck",
- "cpufeatures",
  "proc-macro-crate 0.1.5",
  "solana-program",
  "toml_datetime 0.6.5",
@@ -194,7 +192,6 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "bytemuck",
- "cpufeatures",
  "proc-macro-crate 0.1.5",
  "solana-program",
  "toml_datetime 0.6.5",
@@ -208,7 +205,6 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "bytemuck",
- "cpufeatures",
  "proc-macro-crate 0.1.5",
  "solana-program",
  "toml_datetime 0.6.5",
