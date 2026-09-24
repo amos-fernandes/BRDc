@@ -8,7 +8,7 @@ on:
       - 'solana/**'
 
 env:
-  SOLANA_VERSION: v2.3.7
+  SOLANA_VERSION: v4.3.0
 
 jobs:
   build:
@@ -104,10 +104,10 @@ jobs:
           set -euxo pipefail
           export PATH="$SOLANA_BIN:$PATH"
 
-          cargo build-sbf --verbose --manifest-path programs/brdc-oracle-bridge/Cargo.toml
-          cargo build-sbf --verbose --manifest-path programs/brdc-token/Cargo.toml
-          cargo build-sbf --verbose --manifest-path programs/brdc-reserve/Cargo.toml
-          cargo build-sbf --verbose --manifest-path programs/brdc-governance/Cargo.toml
+          cargo build-sbf --locked --verbose --manifest-path programs/brdc-oracle-bridge/Cargo.toml
+          cargo build-sbf --locked --verbose --manifest-path programs/brdc-token/Cargo.toml
+          cargo build-sbf --locked --verbose --manifest-path programs/brdc-reserve/Cargo.toml
+          cargo build-sbf --locked --verbose --manifest-path programs/brdc-governance/Cargo.toml
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
