@@ -14,26 +14,25 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-          . "$HOME/.cargo/env"
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.85.0
 
       - name: Install Solana CLI
         run: |
           sh -c "$(curl -sSfL https://release.solana.com/v2.3.0/install)"
-          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
 
       - name: Install cargo-build-sbf
         run: |
-          cargo install cargo-build-sbf --locked
+          cargo install cargo-build-sbf --version 2.3.0 --locked
 
       - name: Verify installations
         run: |
           rustc --version
           cargo --version
           cargo build-sbf --version
-          which solana
+          solana --version
 
       - name: Cache cargo
         uses: actions/cache@v4
@@ -47,10 +46,11 @@ jobs:
       - name: Build Programs
         working-directory: ./solana
         run: |
-          cargo build-sbf --manifest-path programs/brdc-oracle-bridge/Cargo.toml
-          cargo build-sbf --manifest-path programs/brdc-token/Cargo.toml
-          cargo build-sbf --manifest-path programs/brdc-reserve/Cargo.toml
-          cargo build-sbf --manifest-path programs/brdc-governance/Cargo.toml
+          set -euxo pipefail
+          cargo build-sbf --verbose --manifest-path programs/brdc-oracle-bridge/Cargo.toml
+          cargo build-sbf --verbose --manifest-path programs/brdc-token/Cargo.toml
+          cargo build-sbf --verbose --manifest-path programs/brdc-reserve/Cargo.toml
+          cargo build-sbf --verbose --manifest-path programs/brdc-governance/Cargo.toml
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -74,7 +74,7 @@ jobs:
       - name: Install Solana CLI
         run: |
           sh -c "$(curl -sSfL https://release.solana.com/v2.3.0/install)"
-          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
 
       - name: Configure Wallet
         run: |
