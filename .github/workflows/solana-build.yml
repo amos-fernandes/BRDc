@@ -8,7 +8,7 @@ on:
       - 'solana/**'
 
 env:
-  SOLANA_VERSION: v2.3.6
+  SOLANA_VERSION: v2.3.7
 
 jobs:
   build:
@@ -95,7 +95,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             solana/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-v2-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build Programs
         working-directory: ./solana
