@@ -46,8 +46,6 @@ jobs:
 
           rustc --version
           cargo --version
-          rustc --version
-          cargo --version
 
       - name: Install Solana CLI
         shell: bash
@@ -84,9 +82,12 @@ jobs:
 
       - name: Verify Solana build toolchain
         shell: bash
+        env:
+          RUSTUP_TOOLCHAIN: nightly-2025-06-01
         run: |
           set -euxo pipefail
-          export PATH="$SOLANA_BIN:$PATH"
+          export PATH="$HOME/.cargo/bin:$SOLANA_BIN:$PATH"
+          rustup default nightly-2025-06-01
 
           command -v cargo
           cargo --version
@@ -107,9 +108,14 @@ jobs:
       - name: Build Programs
         working-directory: ./solana
         shell: bash
+        env:
+          RUSTUP_TOOLCHAIN: nightly-2025-06-01
         run: |
           set -euxo pipefail
-          export PATH="$SOLANA_BIN:$PATH"
+          export PATH="$HOME/.cargo/bin:$SOLANA_BIN:$PATH"
+          rustup default nightly-2025-06-01
+          rustc --version
+          cargo --version
 
           cargo build-sbf --verbose --manifest-path programs/brdc-oracle-bridge/Cargo.toml
           cargo build-sbf --verbose --manifest-path programs/brdc-token/Cargo.toml
