@@ -8,7 +8,7 @@ on:
       - 'solana/**'
 
 env:
-  SOLANA_VERSION: v2.2.0
+  SOLANA_VERSION: v2.3.13
   SOLANA_RPC_URL: https://api.testnet.solana.com
   REQUIRED_DEPLOYMENT_SOL: "5"
 
@@ -103,14 +103,13 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             solana/target
-          key: ${{ runner.os }}-cargo-v4-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-v5-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build Programs
         working-directory: ./solana
         shell: bash
         env:
           RUSTUP_TOOLCHAIN: nightly-2025-06-01
-          CARGO: /home/runner/.cargo/bin/cargo
         run: |
           set -euxo pipefail
           export PATH="$HOME/.cargo/bin:$SOLANA_BIN:$PATH"
