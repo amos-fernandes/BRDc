@@ -8,7 +8,7 @@ on:
       - 'solana/**'
 
 env:
-  SOLANA_VERSION: v2.1.0
+  SOLANA_VERSION: v2.2.0
   SOLANA_RPC_URL: https://api.testnet.solana.com
   REQUIRED_DEPLOYMENT_SOL: "5"
 
