@@ -118,10 +118,10 @@ jobs:
           rustc --version
           cargo --version
 
-          cargo build-sbf --verbose --locked --manifest-path programs/brdc-oracle-bridge/Cargo.toml
-          cargo build-sbf --verbose --locked --manifest-path programs/brdc-token/Cargo.toml
-          cargo build-sbf --verbose --locked --manifest-path programs/brdc-reserve/Cargo.toml
-          cargo build-sbf --verbose --locked --manifest-path programs/brdc-governance/Cargo.toml
+          cargo build-sbf --verbose -- --locked --manifest-path programs/brdc-oracle-bridge/Cargo.toml
+          cargo build-sbf --verbose -- --locked --manifest-path programs/brdc-token/Cargo.toml
+          cargo build-sbf --verbose -- --locked --manifest-path programs/brdc-reserve/Cargo.toml
+          cargo build-sbf --verbose -- --locked --manifest-path programs/brdc-governance/Cargo.toml
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
