@@ -8,7 +8,7 @@ on:
       - 'solana/**'
 
 env:
-  SOLANA_VERSION: v2.3.16
+  SOLANA_VERSION: stable
   SOLANA_RPC_URL: https://api.testnet.solana.com
   REQUIRED_DEPLOYMENT_SOL: "5"
 
@@ -118,9 +118,9 @@ jobs:
           cargo --version
 
           cargo build-sbf --verbose -- --locked -p brdc-oracle-bridge
-          cargo build-sbf --verbose -- --locked -p brdc-token
-          cargo build-sbf --verbose -- --locked -p brdc-reserve
-          cargo build-sbf --verbose -- --locked -p brdc-governance
+          cargo build-sbf --verbose -- --locked -p brdc-solana-token
+          cargo build-sbf --verbose -- --locked -p brdc-solana-reserve
+          cargo build-sbf --verbose -- --locked -p brdc-solana-governance
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
