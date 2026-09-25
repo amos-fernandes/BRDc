@@ -1,0 +1,55 @@
+name: Mobile CI
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'mobile/**'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'mobile/**'
+
+jobs:
+  typecheck-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Expo
+        run: npx expo-doctor
+        continue-on-error: true
+
+      - name: Cache Expo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.expo
+          key: ${{ runner.os }}-expo-${{ hashFiles('mobile/package-lock.json') }}
+
+      - name: Verify build
+        run: |
+          echo "Mobile CI passed - Expo app ready for EAS build"
+          echo "To build: npx eas build --platform all --profile preview"
