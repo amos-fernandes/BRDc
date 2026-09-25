@@ -6,3 +6,5 @@ build-check/
 dist/
 *.log
 solana/test-ledger/
+.expo/
+.next/
