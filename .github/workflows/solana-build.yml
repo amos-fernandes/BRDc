@@ -254,10 +254,14 @@ jobs:
           wallet="$(solana address \
             --keypair "$SOLANA_KEYPAIR_PATH")"
 
-          balance_lamports="$(solana balance \
+          balance_output="$(solana balance \
             --lamports \
             --keypair "$SOLANA_KEYPAIR_PATH" \
             --url "$SOLANA_RPC_URL")"
+
+          # Solana CLI outputs values such as:
+          # "10000000000 lamports"
+          balance_lamports="$(awk '{ print $1 }' <<< "$balance_output")"
 
           # One SOL is a conservative minimum for deploying/upgrading
           # the four programs in this workflow. The actual amount depends
@@ -266,11 +270,11 @@ jobs:
           required_sol="1.0"
 
           echo "Deployment wallet: $wallet"
-          echo "Deployment wallet balance: ${balance_lamports} lamports"
+          echo "Deployment wallet balance: ${balance_output}"
           echo "Required minimum balance: ${required_lamports} lamports (${required_sol} SOL)"
 
           if ! [[ "$balance_lamports" =~ ^[0-9]+$ ]]; then
-            echo "::error::Could not parse the Solana wallet balance: $balance_lamports"
+            echo "::error::Could not parse the Solana wallet balance: $balance_output"
             exit 1
           fi
 
