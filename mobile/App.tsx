@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { Buffer } from "buffer";
+import { SolanaWalletProvider } from "./src/WalletProvider";
+import { ConnectWalletButton } from "./src/ConnectWalletButton";
 import {
   ActivityIndicator,
   Linking,
@@ -42,6 +45,7 @@ type SolanaSnapshot = {
 };
 
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "").trim().replace(/\/+$/, "");
+const SOLANA_RPC_URL = (process.env.EXPO_PUBLIC_SOLANA_RPC_URL ?? "https://api.devnet.solana.com").trim();
 const LEGAL_URL = "https://github.com/amos-fernandes/BRDc/blob/master/LEGAL_DISCLAIMER.md";
 const NAV_DEMO: NavSnapshot = {
   source: "demo",
@@ -62,6 +66,13 @@ const SOLANA_EMPTY: SolanaSnapshot = {
   reserve: EMPTY_READING("ID do programa não configurado; nenhum saldo demonstrativo foi inventado."),
   governance: EMPTY_READING("ID do programa não configurado; nenhuma proposta demonstrativa foi inventada."),
 };
+
+const ORACLE_PROGRAM_ID = (process.env.EXPO_PUBLIC_ORACLE_PROGRAM_ID ?? "").trim();
+const TOKEN_PROGRAM_ID = (process.env.EXPO_PUBLIC_TOKEN_PROGRAM_ID ?? "").trim();
+const RESERVE_PROGRAM_ID = (process.env.EXPO_PUBLIC_RESERVE_PROGRAM_ID ?? "").trim();
+const GOVERNANCE_PROGRAM_ID = (process.env.EXPO_PUBLIC_GOVERNANCE_PROGRAM_ID ?? "").trim();
+
+const hasProgramIds = ORACLE_PROGRAM_ID && TOKEN_PROGRAM_ID && RESERVE_PROGRAM_ID && GOVERNANCE_PROGRAM_ID;
 const TABS: { id: Tab; label: string }[] = [
   { id: "overview", label: "Visão" },
   { id: "nav", label: "NAV" },
@@ -156,6 +167,50 @@ function InfoBox({ children, warning = false }: { children: string; warning?: bo
   );
 }
 
+function readU64LE(data: Uint8Array, offset: number): string {
+  if (data.length < offset + 8) throw new Error("Conta menor que o layout esperado.");
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  return view.getBigUint64(offset, true).toString();
+}
+
+function fetchProgramAccount(connection: string, programId: string, expectedSize: number) {
+  return fetch(connection, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "getProgramAccounts",
+      params: [
+        programId,
+        { commitment: "confirmed", filters: [{ dataSize: expectedSize }] },
+      ],
+    }),
+  }).then((r) => r.json());
+}
+
+function decodeToken(data: Uint8Array) {
+  return {
+    totalSupplyRaw: readU64LE(data, 32),
+    goldReservesRaw: readU64LE(data, 40),
+    goldBackedSupplyRaw: readU64LE(data, 48),
+  };
+}
+
+function decodeReserve(data: Uint8Array) {
+  return {
+    balanceRaw: readU64LE(data, 32),
+    redemptionCountRaw: readU64LE(data, 72),
+    snapshotCountRaw: readU64LE(data, 80),
+  };
+}
+
+function decodeGovernance(data: Uint8Array) {
+  return {
+    proposalCountRaw: readU64LE(data, 56),
+  };
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>("overview");
   const [nav, setNav] = useState<NavSnapshot>(NAV_DEMO);
@@ -164,54 +219,83 @@ export default function App() {
   const [refreshing, setRefreshing] = useState(false);
 
   const refresh = useCallback(async () => {
-    if (!API_BASE_URL) {
-      setNav(NAV_DEMO);
-      setSolana(SOLANA_EMPTY);
-      return;
-    }
-
     setRefreshing(true);
-    const load = async <T,>(path: string): Promise<T> => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12_000);
-      try {
-        const response = await fetch(`${API_BASE_URL}${path}`, {
-          headers: { Accept: "application/json" },
-          signal: controller.signal,
-        });
-        if (!response.ok) throw new Error("Leitura indisponível");
-        return (await response.json()) as T;
-      } finally {
-        clearTimeout(timeout);
-      }
-    };
+    
+    // Fetch NAV from API (Base Sepolia)
+    if (API_BASE_URL) {
+      const load = async <T,>(path: string): Promise<T> => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12_000);
+        try {
+          const response = await fetch(`${API_BASE_URL}${path}`, {
+            headers: { Accept: "application/json" },
+            signal: controller.signal,
+          });
+          if (!response.ok) throw new Error("Leitura indisponível");
+          return (await response.json()) as T;
+        } finally {
+          clearTimeout(timeout);
+        }
+      };
 
-    const [navResult, reserveResult] = await Promise.allSettled([
-      load<NavSnapshot>("/api/nav"),
-      load<SolanaSnapshot>("/api/reserve"),
-    ]);
-    if (navResult.status === "fulfilled") {
-      setNav(navResult.value);
+      const navResult = await load<NavSnapshot>("/api/nav").catch(() => null);
+      if (navResult) setNav(navResult);
     } else {
-      setNav({
-        ...NAV_DEMO,
-        message: "Não foi possível consultar a API configurada; exibindo valor de demonstração.",
-      });
+      setNav(NAV_DEMO);
     }
-    if (reserveResult.status === "fulfilled") {
-      setSolana(reserveResult.value);
+
+    // Fetch Solana data directly if program IDs are configured
+    if (hasProgramIds) {
+      try {
+        const [tokenRes, reserveRes, govRes] = await Promise.allSettled([
+          fetchProgramAccount(SOLANA_RPC_URL, TOKEN_PROGRAM_ID, 80),
+          fetchProgramAccount(SOLANA_RPC_URL, RESERVE_PROGRAM_ID, 88),
+          fetchProgramAccount(SOLANA_RPC_URL, GOVERNANCE_PROGRAM_ID, 64),
+        ]);
+
+        const parseAccount = (res: PromiseSettledResult<any>, decoder: (data: Uint8Array) => any, name: string) => {
+          if (res.status === "fulfilled") {
+            const data = res.value;
+            if (data.result && data.result.length === 1) {
+              const accountData = new Uint8Array(Buffer.from(data.result[0].account.data[0], "base64"));
+              return {
+                source: "live" as const,
+                value: decoder(accountData),
+                message: `Estado bruto lido do programa ${name} na Solana devnet.`,
+              };
+            }
+            return {
+              source: "unavailable" as const,
+              value: null,
+              message: data.result?.length === 0
+                ? "Nenhuma conta de estado compatível encontrada neste programa."
+                : `${data.result.length} contas compatíveis encontradas; o app não escolhe nem soma estados automaticamente.`,
+            };
+          }
+          return {
+            source: "unavailable" as const,
+            value: null,
+            message: `Falha na leitura do programa ${name} na Solana devnet.`,
+          };
+        };
+
+        const token = parseAccount(tokenRes, decodeToken, "token");
+        const reserve = parseAccount(reserveRes, decodeReserve, "reserve");
+        const governance = parseAccount(govRes, decodeGovernance, "governance");
+
+        setSolana({
+          token,
+          reserve,
+          governance,
+          updatedAt: new Date().toISOString(),
+        });
+      } catch {
+        setSolana(SOLANA_EMPTY);
+      }
     } else {
-      const unavailable = (message: string): StateReading<never> => ({
-        source: "unavailable",
-        value: null,
-        message,
-      });
-      setSolana({
-        token: unavailable("Falha ao consultar a API; nenhum dado de reserva foi inventado."),
-        reserve: unavailable("Falha ao consultar a API; nenhum saldo demonstrativo foi inventado."),
-        governance: unavailable("Falha ao consultar a API; nenhuma proposta demonstrativa foi inventada."),
-      });
+      setSolana(SOLANA_EMPTY);
     }
+
     setRefreshing(false);
   }, []);
 
@@ -473,7 +557,8 @@ export default function App() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SolanaWalletProvider>
+      <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.networkRibbon}>
         <Text style={styles.networkRibbonTitle}>TESTNET / DEVNET — sem valor financeiro real</Text>
@@ -491,6 +576,7 @@ export default function App() {
           <Text style={styles.brandName}>BRDc <Text style={styles.brandExplorer}>Explorer</Text></Text>
           <Text style={styles.brandCaption}>AIBANK · PAINEL DO PROTÓTIPO</Text>
         </View>
+        <ConnectWalletButton />
         <Pressable
           onPress={() => void refresh()}
           disabled={refreshing}
@@ -515,7 +601,7 @@ export default function App() {
         <View style={styles.footer}>
           <Text style={styles.footerTitle}>BRDc Explorer</Text>
           <Text style={styles.tinyCopy}>Painel informativo · AIBANK · leitura somente</Text>
-          <Text style={styles.footerMeta}>SEM CARTEIRA · SEM TRANSAÇÕES</Text>
+          <Text style={styles.footerMeta}>CARTEIRA OPCIONAL · SEM TRANSAÇÕES AUTOMÁTICAS</Text>
         </View>
       </ScrollView>
 
@@ -534,6 +620,7 @@ export default function App() {
         ))}
       </View>
     </SafeAreaView>
+    </SolanaWalletProvider>
   );
 }
 

@@ -1,0 +1,77 @@
+.walletConnected {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #f4f0e7;
+  border: 1px solid #e4d9c1;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #5b4c2d;
+}
+
+.address {
+  font-family: monospace;
+  font-weight: 600;
+}
+
+.disconnectBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid #d6c69e;
+  border-radius: 6px;
+  color: #796236;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.disconnectBtn:hover {
+  background: #e4d9c1;
+}
+
+.connectBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #12151c;
+  color: #f7f5f0;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.connectBtn:hover:not(:disabled) {
+  background: #2e4a66;
+}
+
+.connectBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.connecting {
+  background: #b08d46;
+  color: #12151c;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

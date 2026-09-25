@@ -1,23 +1,6 @@
 "use client";
 
-import {
-  Activity,
-  ArrowDownRight,
-  ArrowRight,
-  BarChart3,
-  Boxes,
-  CircleDollarSign,
-  ClipboardList,
-  Database,
-  Info,
-  Landmark,
-  LockKeyhole,
-  Menu,
-  RefreshCw,
-  Scale,
-  ShieldAlert,
-  Vault,
-} from "lucide-react";
+import { ConnectWalletButton } from "./ConnectWalletButton";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DEMO_NAV, EMPTY_SOLANA, type DataSource, type NavSnapshot, type SolanaSnapshot } from "@/lib/types";
 
@@ -204,6 +187,7 @@ export function Explorer() {
         </nav>
 
         <div className="sidebar-bottom">
+          <ConnectWalletButton />
           <div className="sidebar-note">
             <LockKeyhole size={16} />
             <span>Somente leitura<br />Nenhuma carteira conectada</span>
