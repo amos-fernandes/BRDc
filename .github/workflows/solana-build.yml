@@ -38,9 +38,14 @@ jobs:
 
           rustup toolchain install 1.87.0 \
             --profile minimal \
-            --no-self-update
+            --no-self-update \
+            --component rust-src
 
           rustup default 1.87.0
+          rustup component add rust-src --toolchain 1.87.0
+
+          rustc --version
+          cargo --version
           rustc --version
           cargo --version
 
@@ -97,7 +102,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             solana/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-v3-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build Programs
         working-directory: ./solana
