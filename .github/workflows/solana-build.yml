@@ -36,13 +36,13 @@ jobs:
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
           export PATH="$HOME/.cargo/bin:$PATH"
 
-          rustup toolchain install 1.87.0 \
+          rustup toolchain install nightly-2025-06-01 \
             --profile minimal \
             --no-self-update \
             --component rust-src
 
-          rustup default 1.87.0
-          rustup component add rust-src --toolchain 1.87.0
+          rustup default nightly-2025-06-01
+          rustup component add rust-src --toolchain nightly-2025-06-01
 
           rustc --version
           cargo --version
@@ -102,7 +102,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             solana/target
-          key: ${{ runner.os }}-cargo-v3-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-v4-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Build Programs
         working-directory: ./solana
