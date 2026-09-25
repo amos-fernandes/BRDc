@@ -117,7 +117,7 @@ jobs:
           rustc --version
           cargo --version
 
-          cargo build-sbf --verbose -- --locked -p brdc-oracle-bridge -p brdc-solana-token -p brdc-solana-reserve -p brdc-solana-governance
+          cargo build-sbf --verbose -p brdc-oracle-bridge -p brdc-solana-token -p brdc-solana-reserve -p brdc-solana-governance -- --locked
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
@@ -276,18 +276,30 @@ jobs:
           set -euo pipefail
           export PATH="$SOLANA_BIN:$PATH"
 
+          # Find actual artifacts in target directory
+          ORACLE_SO=$(find target -maxdepth 4 -type f -name '*oracle*.so' | head -n 1)
+          TOKEN_SO=$(find target -maxdepth 4 -type f -name '*token*.so' | head -n 1)
+          RESERVE_SO=$(find target -maxdepth 4 -type f -name '*reserve*.so' | head -n 1)
+          GOVERNANCE_SO=$(find target -maxdepth 4 -type f -name '*governance*.so' | head -n 1)
+
+          echo "Found artifacts:"
+          echo "  oracle: $ORACLE_SO"
+          echo "  token: $TOKEN_SO"
+          echo "  reserve: $RESERVE_SO"
+          echo "  governance: $GOVERNANCE_SO"
+
           declare -A programs=(
-            [oracle]="target/deploy/libbrdc_oracle_bridge.so|$RUNNER_TEMP/program-keys/oracle-keypair.json"
-            [token]="target/deploy/libbrdc_solana_token.so|$RUNNER_TEMP/program-keys/token-keypair.json"
-            [reserve]="target/deploy/libbrdc_solana_reserve.so|$RUNNER_TEMP/program-keys/reserve-keypair.json"
-            [governance]="target/deploy/libbrdc_solana_governance.so|$RUNNER_TEMP/program-keys/governance-keypair.json"
+            [oracle]="$ORACLE_SO|$RUNNER_TEMP/program-keys/oracle-keypair.json"
+            [token]="$TOKEN_SO|$RUNNER_TEMP/program-keys/token-keypair.json"
+            [reserve]="$RESERVE_SO|$RUNNER_TEMP/program-keys/reserve-keypair.json"
+            [governance]="$GOVERNANCE_SO|$RUNNER_TEMP/program-keys/governance-keypair.json"
           )
 
           for name in "${!programs[@]}"; do
             IFS='|' read -r artifact program_id_keypair <<< "${programs[$name]}"
 
-            [[ -s "$artifact" ]] || {
-              echo "::error::Invalid or missing artifact: $artifact"
+            [[ -n "$artifact" && -s "$artifact" ]] || {
+              echo "::error::Invalid or missing artifact for $name: $artifact"
               exit 1
             }
 
