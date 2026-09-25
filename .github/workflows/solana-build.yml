@@ -9,6 +9,8 @@ on:
 
 env:
   SOLANA_VERSION: v2.3.6
+  SOLANA_RPC_URL: https://api.testnet.solana.com
+  REQUIRED_DEPLOYMENT_SOL: "5"
 
 jobs:
   build:
@@ -162,18 +164,134 @@ jobs:
           cargo-build-sbf --version
 
       - name: Configure Wallet
+        shell: bash
+        env:
+          SOLANA_KEYPAIR_SECRET: ${{ secrets.SOLANA_KEYPAIR }}
         run: |
-          echo "${{ secrets.SOLANA_KEYPAIR }}" > keypair.json
-          solana config set --keypair keypair.json --url https://api.testnet.solana.com
+          set -euo pipefail
+
+          KEYPAIR_PATH="$RUNNER_TEMP/solana-deployer.json"
+
+          if [[ -z "${SOLANA_KEYPAIR_SECRET}" ]]; then
+            echo "::error::SOLANA_KEYPAIR secret is empty or unavailable"
+            exit 1
+          fi
+
+          printf '%s' "$SOLANA_KEYPAIR_SECRET" > "$KEYPAIR_PATH"
+          chmod 600 "$KEYPAIR_PATH"
+
+          # Confirms that the secret contains a valid Solana keypair.
+          solana address --keypair "$KEYPAIR_PATH"
+
+          solana config set \
+            --keypair "$KEYPAIR_PATH" \
+            --url "$SOLANA_RPC_URL"
+
+          echo "SOLANA_KEYPAIR_PATH=$KEYPAIR_PATH" >> "$GITHUB_ENV"
+
+      - name: Configure program keypairs
+        shell: bash
+        env:
+          ORACLE_PROGRAM_KEYPAIR: ${{ secrets.ORACLE_PROGRAM_KEYPAIR }}
+          TOKEN_PROGRAM_KEYPAIR: ${{ secrets.TOKEN_PROGRAM_KEYPAIR }}
+          RESERVE_PROGRAM_KEYPAIR: ${{ secrets.RESERVE_PROGRAM_KEYPAIR }}
+          GOVERNANCE_PROGRAM_KEYPAIR: ${{ secrets.GOVERNANCE_PROGRAM_KEYPAIR }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$RUNNER_TEMP/program-keys"
+
+          printf '%s' "$ORACLE_PROGRAM_KEYPAIR" \
+            > "$RUNNER_TEMP/program-keys/oracle-keypair.json"
+          printf '%s' "$TOKEN_PROGRAM_KEYPAIR" \
+            > "$RUNNER_TEMP/program-keys/token-keypair.json"
+          printf '%s' "$RESERVE_PROGRAM_KEYPAIR" \
+            > "$RUNNER_TEMP/program-keys/reserve-keypair.json"
+          printf '%s' "$GOVERNANCE_PROGRAM_KEYPAIR" \
+            > "$RUNNER_TEMP/program-keys/governance-keypair.json"
+
+          chmod 600 "$RUNNER_TEMP"/program-keys/*.json
+
+      - name: Check deployment wallet balance
+        shell: bash
+        env:
+          SOLANA_KEYPAIR_PATH: ${{ env.SOLANA_KEYPAIR_PATH }}
+        run: |
+          set -euo pipefail
+
+          export PATH="$SOLANA_BIN:$PATH"
+
+          wallet="$(solana address \
+            --keypair "$SOLANA_KEYPAIR_PATH")"
+
+          balance_output="$(solana balance \
+            --lamports \
+            --keypair "$SOLANA_KEYPAIR_PATH" \
+            --url "$SOLANA_RPC_URL")"
+
+          # Solana CLI outputs values such as:
+          # "10000000000 lamports"
+          balance_lamports="$(awk '{ print $1 }' <<< "$balance_output")"
+
+          required_sol="${REQUIRED_DEPLOYMENT_SOL:-5}"
+          required_lamports="$(
+            awk -v sol="$required_sol" \
+              'BEGIN { printf "%.0f", sol * 1000000000 }'
+          )"
+
+          echo "Deployment wallet: $wallet"
+          echo "Deployment wallet balance: ${balance_output}"
+          echo "Required minimum balance: ${required_lamports} lamports (${required_sol} SOL)"
+
+          if ! [[ "$balance_lamports" =~ ^[0-9]+$ ]]; then
+            echo "::error::Could not parse the Solana wallet balance: $balance_output"
+            exit 1
+          fi
+
+          if (( balance_lamports < required_lamports )); then
+            actual_sol="$(
+              awk -v lamports="$balance_lamports" \
+                'BEGIN { printf "%.9f", lamports / 1000000000 }'
+            )"
+
+            echo "::error::Insufficient SOL on Solana testnet."
+            echo "::error::Wallet: $wallet"
+            echo "::error::Current balance: ${actual_sol} SOL"
+            echo "::error::Minimum required: ${required_sol} SOL"
+            echo "::error::Fund this wallet on testnet, then rerun the workflow."
+            exit 1
+          fi
+
+          echo "Deployment wallet has sufficient funds."
 
       - name: Deploy Programs
         working-directory: ./solana
         shell: bash
         run: |
-          set -euxo pipefail
+          set -euo pipefail
           export PATH="$SOLANA_BIN:$PATH"
 
-          solana program deploy target/deploy/libbrdc_oracle_bridge.so
-          solana program deploy target/deploy/libbrdc_solana_token.so
-          solana program deploy target/deploy/libbrdc_solana_reserve.so
-          solana program deploy target/deploy/libbrdc_solana_governance.so
+          declare -A programs=(
+            [oracle]="target/deploy/libbrdc_oracle_bridge.so|$RUNNER_TEMP/program-keys/oracle-keypair.json"
+            [token]="target/deploy/libbrdc_solana_token.so|$RUNNER_TEMP/program-keys/token-keypair.json"
+            [reserve]="target/deploy/libbrdc_solana_reserve.so|$RUNNER_TEMP/program-keys/reserve-keypair.json"
+            [governance]="target/deploy/libbrdc_solana_governance.so|$RUNNER_TEMP/program-keys/governance-keypair.json"
+          )
+
+          for name in "${!programs[@]}"; do
+            IFS='|' read -r artifact program_id_keypair <<< "${programs[$name]}"
+
+            [[ -s "$artifact" ]] || {
+              echo "::error::Invalid or missing artifact: $artifact"
+              exit 1
+            }
+
+            echo "Deploying $name"
+            solana address --keypair "$program_id_keypair"
+
+            solana program deploy \
+              --keypair "$SOLANA_KEYPAIR_PATH" \
+              --program-id "$program_id_keypair" \
+              --url "$SOLANA_RPC_URL" \
+              "$artifact"
+          done
