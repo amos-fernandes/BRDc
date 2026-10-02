@@ -6,7 +6,8 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aibank.brdcexplorer"
     },
     "android": {
       "package": "com.aibank.brdcexplorer"

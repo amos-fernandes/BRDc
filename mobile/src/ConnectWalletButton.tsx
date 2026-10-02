@@ -1,8 +1,10 @@
 import { useWallet } from "@solana/wallet-adapter-react";
+import type { WalletName } from "@solana/wallet-adapter-base";
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 
 export function ConnectWalletButton() {
   const { connected, connecting, disconnect, select, publicKey, wallet } = useWallet();
+  const connect = () => select((wallet?.adapter.name ?? "Phantom") as WalletName);
 
   if (connected && publicKey) {
     return (
@@ -20,11 +22,11 @@ export function ConnectWalletButton() {
   return (
     <TouchableOpacity
       style={[styles.connectBtn, connecting && styles.connecting]}
-      onPress={select}
+      onPress={connect}
       disabled={connecting}
     >
       <Text style={[styles.connectText, connecting && styles.connectingText]}>
-        {connecting ? "Conectando..." : wallet ? wallet.name : "Conectar Carteira"}
+        {connecting ? "Conectando..." : wallet ? wallet.adapter.name : "Conectar Carteira"}
       </Text>
       {connecting && <ActivityIndicator size="small" color="#F7F5F0" />}
     </TouchableOpacity>

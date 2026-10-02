@@ -6,6 +6,7 @@ import styles from "./WalletProvider.module.css";
 
 export function ConnectWalletButton() {
   const { connected, connecting, disconnect, select, publicKey, wallet } = useWallet();
+  const connect = () => select((wallet?.adapter.name ?? "Phantom") as import("@solana/wallet-adapter-base").WalletName);
 
   if (connected && publicKey) {
     return (
@@ -24,12 +25,12 @@ export function ConnectWalletButton() {
   return (
     <button
       className={`${styles.connectBtn} ${connecting ? styles.connecting : ""}`}
-      onClick={select}
+      onClick={connect}
       disabled={connecting}
       type="button"
     >
       {connecting ? <Loader2 size={16} className={styles.spinner} /> : <ArrowRight size={16} />}
-      <span>{connecting ? "Conectando..." : wallet ? wallet.name : "Conectar Carteira"}</span>
+      <span>{connecting ? "Conectando..." : wallet ? wallet.adapter.name : "Conectar Carteira"}</span>
     </button>
   );
 }
