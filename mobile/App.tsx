@@ -42,6 +42,7 @@ type SolanaSnapshot = {
     snapshotCountRaw: string;
   }>;
   governance: StateReading<{ proposalCountRaw: string }>;
+  updatedAt?: string | null;
 };
 
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL ?? "").trim().replace(/\/+$/, "");
