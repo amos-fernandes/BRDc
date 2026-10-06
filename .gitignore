@@ -8,3 +8,4 @@ dist/
 solana/test-ledger/
 .expo/
 .next/
+.env.example
