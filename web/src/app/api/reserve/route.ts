@@ -8,59 +8,123 @@ import {
   type StateReading,
   type TokenState,
 } from "@/lib/types";
+import {
+  decodeTokenAccount,
+  TOKEN_PROGRAM_LAYOUT,
+  TOKEN_PROGRAM_ID,
+  decodeReserveAccount,
+  RESERVE_PROGRAM_LAYOUT,
+  RESERVE_PROGRAM_ID,
+  decodeGovernanceAccount,
+  GOVERNANCE_PROGRAM_LAYOUT,
+  GOVERNANCE_PROGRAM_ID,
+} from "@brdc/sdk";
 
 export const dynamic = "force-dynamic";
 
-type Decoder<T> = (data: Buffer) => T;
-
-function readU64(data: Buffer, offset: number): string {
-  if (data.length < offset + 8) throw new Error("Conta menor que o layout esperado.");
-  return data.readBigUInt64LE(offset).toString();
-}
-
-async function readUniqueProgramAccount<T>(
+async function readTokenAccount(
   connection: Connection,
-  configuredId: string | undefined,
-  expectedSize: number,
-  decode: Decoder<T>,
+  programId: string,
   missingMessage: string,
-): Promise<StateReading<T>> {
-  const id = configuredId?.trim();
+): Promise<StateReading<TokenState>> {
+  const id = programId?.trim();
   if (!id) {
     return { source: "demo", value: null, message: missingMessage };
   }
-
   try {
-    const programId = new PublicKey(id);
-    const accounts = await connection.getProgramAccounts(programId, {
+    const pubkey = new PublicKey(id);
+    const accounts = await connection.getProgramAccounts(pubkey, {
       commitment: "confirmed",
-      filters: [{ dataSize: expectedSize }],
+      filters: [{ dataSize: TOKEN_PROGRAM_LAYOUT.accountSize }],
     });
     if (accounts.length === 0) {
-      return {
-        source: "unavailable",
-        value: null,
-        message: "Nenhuma conta de estado compatível encontrada neste programa.",
-      };
+      return { source: "unavailable", value: null, message: "Nenhuma conta de estado compatível encontrada neste programa." };
     }
     if (accounts.length !== 1) {
-      return {
-        source: "unavailable",
-        value: null,
-        message: `${accounts.length} contas compatíveis encontradas; o app não escolhe nem soma estados automaticamente.`,
-      };
+      return { source: "unavailable", value: null, message: `${accounts.length} contas compatíveis encontradas; o app não escolhe nem soma estados automaticamente.` };
     }
+    const decoded = decodeTokenAccount(accounts[0].account.data);
     return {
       source: "live",
-      value: decode(accounts[0].account.data),
+      value: {
+        totalSupplyRaw: decoded.totalSupply.toString(),
+        goldReservesRaw: decoded.goldReserves.toString(),
+        goldBackedSupplyRaw: decoded.goldBackedSupply.toString(),
+      },
       message: "Estado bruto lido de uma conta do programa na Solana devnet.",
     };
   } catch {
+    return { source: "demo", value: null, message: "Falha na leitura da Solana devnet; nenhum saldo demonstrativo foi inventado." };
+  }
+}
+
+async function readReserveAccount(
+  connection: Connection,
+  programId: string,
+  missingMessage: string,
+): Promise<StateReading<ReserveState>> {
+  const id = programId?.trim();
+  if (!id) {
+    return { source: "demo", value: null, message: missingMessage };
+  }
+  try {
+    const pubkey = new PublicKey(id);
+    const accounts = await connection.getProgramAccounts(pubkey, {
+      commitment: "confirmed",
+      filters: [{ dataSize: RESERVE_PROGRAM_LAYOUT.accountSize }],
+    });
+    if (accounts.length === 0) {
+      return { source: "unavailable", value: null, message: "Nenhuma conta de estado compatível encontrada neste programa." };
+    }
+    if (accounts.length !== 1) {
+      return { source: "unavailable", value: null, message: `${accounts.length} contas compatíveis encontradas; o app não escolhe nem soma estados automaticamente.` };
+    }
+    const decoded = decodeReserveAccount(accounts[0].account.data);
     return {
-      source: "demo",
-      value: null,
-      message: "Falha na leitura da Solana devnet; nenhum saldo demonstrativo foi inventado.",
+      source: "live",
+      value: {
+        balanceRaw: decoded.balance.toString(),
+        redemptionCountRaw: decoded.redemptionCount.toString(),
+        snapshotCountRaw: decoded.snapshotCount.toString(),
+      },
+      message: "Estado bruto lido de uma conta do programa na Solana devnet.",
     };
+  } catch {
+    return { source: "demo", value: null, message: "Falha na leitura da Solana devnet; nenhum saldo demonstrativo foi inventado." };
+  }
+}
+
+async function readGovernanceAccount(
+  connection: Connection,
+  programId: string,
+  missingMessage: string,
+): Promise<StateReading<GovernanceState>> {
+  const id = programId?.trim();
+  if (!id) {
+    return { source: "demo", value: null, message: missingMessage };
+  }
+  try {
+    const pubkey = new PublicKey(id);
+    const accounts = await connection.getProgramAccounts(pubkey, {
+      commitment: "confirmed",
+      filters: [{ dataSize: GOVERNANCE_PROGRAM_LAYOUT.accountSize }],
+    });
+    if (accounts.length === 0) {
+      return { source: "unavailable", value: null, message: "Nenhuma conta de estado compatível encontrada neste programa." };
+    }
+    if (accounts.length !== 1) {
+      return { source: "unavailable", value: null, message: `${accounts.length} contas compatíveis encontradas; o app não escolhe nem soma estados automaticamente.` };
+    }
+    const decoded = decodeGovernanceAccount(accounts[0].account.data);
+    return {
+      source: "live",
+      value: {
+        proposalCountRaw: decoded.proposalCount.toString(),
+      },
+      message: "Estado bruto lido de uma conta do programa na Solana devnet.",
+    };
+  } catch {
+    return { source: "demo", value: null, message: "Falha na leitura da Solana devnet; nenhum saldo demonstrativo foi inventado." };
   }
 }
 
@@ -69,42 +133,10 @@ export async function GET() {
     process.env.NEXT_PUBLIC_SOLANA_RPC?.trim() || "https://api.devnet.solana.com";
   const connection = new Connection(rpcUrl, "confirmed");
 
-  const tokenDecoder: Decoder<TokenState> = (data) => ({
-    totalSupplyRaw: readU64(data, 32),
-    goldReservesRaw: readU64(data, 40),
-    goldBackedSupplyRaw: readU64(data, 48),
-  });
-  const reserveDecoder: Decoder<ReserveState> = (data) => ({
-    balanceRaw: readU64(data, 32),
-    redemptionCountRaw: readU64(data, 72),
-    snapshotCountRaw: readU64(data, 80),
-  });
-  const governanceDecoder: Decoder<GovernanceState> = (data) => ({
-    proposalCountRaw: readU64(data, 56),
-  });
-
   const [token, reserve, governance] = await Promise.all([
-    readUniqueProgramAccount(
-      connection,
-      process.env.NEXT_PUBLIC_TOKEN_PROGRAM_ID,
-      80,
-      tokenDecoder,
-      EMPTY_SOLANA.token.message,
-    ),
-    readUniqueProgramAccount(
-      connection,
-      process.env.NEXT_PUBLIC_RESERVE_PROGRAM_ID,
-      88,
-      reserveDecoder,
-      EMPTY_SOLANA.reserve.message,
-    ),
-    readUniqueProgramAccount(
-      connection,
-      process.env.NEXT_PUBLIC_GOVERNANCE_PROGRAM_ID,
-      64,
-      governanceDecoder,
-      EMPTY_SOLANA.governance.message,
-    ),
+    readTokenAccount(connection, TOKEN_PROGRAM_ID || process.env.NEXT_PUBLIC_TOKEN_PROGRAM_ID || "", EMPTY_SOLANA.token.message),
+    readReserveAccount(connection, RESERVE_PROGRAM_ID || process.env.NEXT_PUBLIC_RESERVE_PROGRAM_ID || "", EMPTY_SOLANA.reserve.message),
+    readGovernanceAccount(connection, GOVERNANCE_PROGRAM_ID || process.env.NEXT_PUBLIC_GOVERNANCE_PROGRAM_ID || "", EMPTY_SOLANA.governance.message),
   ]);
 
   const snapshot: SolanaSnapshot = {

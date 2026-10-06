@@ -2,6 +2,24 @@
 
 import { ConnectWalletButton } from "./ConnectWalletButton";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Landmark,
+  BarChart3,
+  Boxes,
+  Activity,
+  Vault,
+  Scale,
+  LockKeyhole,
+  ArrowRight,
+  ShieldAlert,
+  Menu,
+  RefreshCw,
+  Info,
+  ArrowDownRight,
+  CircleDollarSign,
+  ClipboardList,
+  Database,
+} from "lucide-react";
 import { DEMO_NAV, EMPTY_SOLANA, type DataSource, type NavSnapshot, type SolanaSnapshot } from "@/lib/types";
 
 const sections = [

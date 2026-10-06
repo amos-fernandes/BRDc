@@ -10,7 +10,7 @@ export function ConnectWalletButton() {
         <Text style={styles.address}>
           {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
         </Text>
-        <TouchableOpacity style={styles.disconnectBtn} onPress={disconnect}>
+        <TouchableOpacity style={styles.disconnectBtn} onPress={() => disconnect()}>
           <Text style={styles.disconnectText}>Desconectar</Text>
         </TouchableOpacity>
       </View>
@@ -20,11 +20,11 @@ export function ConnectWalletButton() {
   return (
     <TouchableOpacity
       style={[styles.connectBtn, connecting && styles.connecting]}
-      onPress={select}
+      onPress={() => select(null)}
       disabled={connecting}
     >
       <Text style={[styles.connectText, connecting && styles.connectingText]}>
-        {connecting ? "Conectando..." : wallet ? wallet.name : "Conectar Carteira"}
+        {connecting ? "Conectando..." : wallet?.adapter?.name || "Conectar Carteira"}
       </Text>
       {connecting && <ActivityIndicator size="small" color="#F7F5F0" />}
     </TouchableOpacity>

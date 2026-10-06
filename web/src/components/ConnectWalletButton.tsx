@@ -13,7 +13,7 @@ export function ConnectWalletButton() {
         <span className={styles.address}>
           {publicKey.toBase58().slice(0, 4)}...{publicKey.toBase58().slice(-4)}
         </span>
-        <button className={styles.disconnectBtn} onClick={disconnect} type="button">
+        <button className={styles.disconnectBtn} onClick={() => disconnect()} type="button">
           <X size={14} />
           <span>Desconectar</span>
         </button>
@@ -24,12 +24,12 @@ export function ConnectWalletButton() {
   return (
     <button
       className={`${styles.connectBtn} ${connecting ? styles.connecting : ""}`}
-      onClick={select}
+      onClick={() => select(null)}
       disabled={connecting}
       type="button"
     >
       {connecting ? <Loader2 size={16} className={styles.spinner} /> : <ArrowRight size={16} />}
-      <span>{connecting ? "Conectando..." : wallet ? wallet.name : "Conectar Carteira"}</span>
+      <span>{connecting ? "Conectando..." : wallet?.adapter?.name || "Conectar Carteira"}</span>
     </button>
   );
 }
