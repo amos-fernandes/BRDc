@@ -176,7 +176,7 @@ export function Explorer() {
           <div className="brand-mark">B</div>
           <div>
             <div className="brand-name">BRDc <span>Explorer</span></div>
-            <div className="brand-caption">AIBANK · PAINEL DO PROTÓTIPO</div>
+            <div className="brand-caption">VERTICALAGENT</div>
           </div>
         </div>
 
