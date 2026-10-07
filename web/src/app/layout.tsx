@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { SolanaWalletProvider } from "@/components/WalletProvider";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "BRDc Explorer — AIBANK",
@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
-        <SolanaWalletProvider>{children}</SolanaWalletProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

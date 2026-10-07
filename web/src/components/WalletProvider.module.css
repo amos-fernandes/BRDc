@@ -1,3 +1,65 @@
+.walletOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.walletOptions > div > .walletNetworkLabel,
+.walletNetworkLabel {
+  display: block;
+  margin-bottom: 4px;
+  color: #796236;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.evmWalletGroup .walletNetworkLabel::after {
+  content: " (opcional)";
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.evmWalletGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.evmButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.evmButtons .connectBtn {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.chainLabel {
+  color: #796236;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.walletHint,
+.walletError {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.walletHint {
+  color: #796236;
+}
+
+.walletError {
+  color: #a33d32;
+}
+
 .walletConnected {
   display: flex;
   align-items: center;
