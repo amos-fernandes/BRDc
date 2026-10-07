@@ -176,7 +176,7 @@ export function Explorer() {
           <div className="brand-mark">B</div>
           <div>
             <div className="brand-name">BRDc <span>Explorer</span></div>
-            <div className="brand-caption">AIBANK · PAINEL DO PROTÓTIPO</div>
+            <div className="brand-caption">VERTICALAGENT</div>
           </div>
         </div>
 
@@ -279,7 +279,7 @@ export function Explorer() {
                 <h2>NAV <span>por unidade</span></h2>
               </div>
               <div className="section-heading-right">
-                <span className="chain-pill"><span /> BASE SEPOLIA</span>
+                <span className="chain-pill"><span /> SOLANA</span>
               </div>
             </div>
 
