@@ -279,7 +279,7 @@ export function Explorer() {
                 <h2>NAV <span>por unidade</span></h2>
               </div>
               <div className="section-heading-right">
-                <span className="chain-pill"><span /> BASE SEPOLIA</span>
+                <span className="chain-pill"><span /> SOLANA</span>
               </div>
             </div>
 
