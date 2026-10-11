@@ -3,20 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Loader2, X } from "lucide-react";
 import styles from "./WalletProvider.module.css";
-
-type EthereumProvider = {
-  isMetaMask?: boolean;
-  isMercadoBitcoin?: boolean;
-  isMBWallet?: boolean;
-  providers?: EthereumProvider[];
-  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>;
-};
-
-declare global {
-  interface Window {
-    ethereum?: EthereumProvider;
-  }
-}
+import type { EthereumProvider } from "@/lib/evm";
 
 function findProvider(kind: "metamask" | "mercado") {
   const providers = window.ethereum?.providers ?? (window.ethereum ? [window.ethereum] : []);

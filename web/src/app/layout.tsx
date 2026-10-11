@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./operations.css";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "BRDc Explorer — AIBANK",
+  title: "BRDc Explorer — VERTICALAGENT",
   description:
     "Painel educativo do protótipo BRDc: composição de índice, custódia de ouro e leitura pública de dados em testnets.",
   robots: { index: false, follow: false },
