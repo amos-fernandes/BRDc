@@ -204,8 +204,9 @@ export function Explorer() {
           ))}
         </nav>
 
-        <div className="sidebar-bottom">
-          <ConnectWalletButton />
+  <div className="sidebar-bottom">
+  <a className="operations-link" href="/operations"><Vault size={16} /> Centro de operações <ArrowRight size={13} /></a>
+  <ConnectWalletButton />
           <div className="sidebar-note">
             <LockKeyhole size={16} />
             <span>Somente leitura<br />Nenhuma carteira conectada</span>
